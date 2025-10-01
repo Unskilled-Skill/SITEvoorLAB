@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Latest Meme • Home</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body class="home">
+
+  <!-- Header (reuse your lines + logo if you want) -->
+  <header>
+    <div class="header-lines">
+      <span></span><span></span><span></span><span></span><span></span>
+    </div>
+    <img src="images/logo.png" alt="Site Logo" class="logo"/>
+  </header>
+
+  <!-- Hero / Latest -->
+  <main>
+    <section class="hero">
+      <div class="hero__inner">
+        <div id="latestMedia" class="hero__media" aria-live="polite">
+          <!-- JS injects the latest meme or video here -->
+        </div>
+
+        <div class="hero__actions">
+          <a class="btn-primary" href="index.html">Go to collection</a>
+        </div>
+      </div>
+
+      <p id="latestNote" class="hero__note">
+        <!-- JS fills this with the info source / fallback text -->
+      </p>
+    </section>
+  </main>
+
+  <footer class="hero__footer">
+    <p>© <span id="year"></span></p>
+  </footer>
+
+  <script type="module" src="js/home.js"></script>
+</body>
+</html>

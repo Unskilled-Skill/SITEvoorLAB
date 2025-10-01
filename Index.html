@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Blank Starter</title>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body class="home">
+  <!-- Header -->
+  <header>
+    <!-- Top blue lines -->
+    <div class="header-lines">
+      <span></span><span></span><span></span><span></span><span></span>
+    </div>
+
+    <!-- Right-side vertical lines -->
+    <div class="header-lines-right">
+      <span></span><span></span><span></span><span></span><span></span>
+    </div>
+
+    <!-- Logo -->
+    <img src="images/logo.png" alt="Site Logo" class="logo"/>
+  </header>
+
+  <!-- Main -->
+  <main>
+    <aside class="rules-box">
+  <h3>Moderation rules</h3>
+  <ul>
+    <li>Be funny, not mean.</li>
+    <li>No bullying, hate, or NSFW.</li>
+    <li>Don’t post personal info.</li>
+    <li>No spam or stolen content.</li>
+    <li>Breaking rules will result in a indefinite ban.</li>
+  </ul>
+</aside>
+
+    <section class="feed">
+      
+      <header class="feed-header">
+        <h2>Latest Posts</h2>
+        <a href="home.html" class="btn-nav">View Latest</a>
+      </header>
+
+      <div class="feed-scroll">
+        <div class="post-grid">
+          <!-- Example posts (add data attributes for full-size media) -->
+          <article class="post" data-id="m1" data-type="image" data-full="images/full/m1.jpg">
+            <img src="images/memes/m1.jpg" alt="Post 1" loading="lazy"/>
+            <div class="post-actions"><button class="btn-action">Comment</button></div>
+          </article>
+
+          <article class="post" data-id="m2" data-type="image" data-full="images/full/m2.jpg">
+            <img src="images/memes/m2.jpg" alt="Post 2" loading="lazy"/>
+            <div class="post-actions"><button class="btn-action">Comment</button></div>
+          </article>
+
+          <article class="post" data-id="m3" data-type="image" data-full="images/full/m3.jpg">
+            <img src="images/memes/m3.jpg" alt="Post 3" loading="lazy"/>
+            <div class="post-actions"><button class="btn-action">Comment</button></div>
+          </article>
+
+          <article class="post" data-id="m4" data-type="image" data-full="images/full/m4.jpg">
+            <img src="images/memes/m4.jpg" alt="Post 4" loading="lazy"/>
+            <div class="post-actions"><button class="btn-action">Comment</button></div>
+          </article>
+
+          <article class="post" data-id="m5" data-type="image" data-full="images/full/m5.jpg">
+            <img src="images/memes/m5.jpg" alt="Post 5" loading="lazy"/>
+            <div class="post-actions"><button class="btn-action">Comment</button></div>
+          </article>
+
+          <article class="post" data-id="m6" data-type="image" data-full="images/full/m6.jpg">
+            <img src="images/memes/m6.jpg" alt="Post 6" loading="lazy"/>
+            <div class="post-actions"><button class="btn-action">Comment</button></div>
+          </article>
+
+          <!-- Example video post -->
+<article class="post" data-id="v1" data-type="video" data-full="videos/v1.mp4">
+  <img class="thumb" alt="Video Post v1 (thumb)" loading="lazy"/>
+  <div class="post-actions"><button class="btn-action">Comment</button></div>
+  <span class="play-badge" aria-hidden="true">▶</span>
+</article>
+
+
+<article class="post upload" id="uploadTile" aria-label="Upload a new post">
+  <input type="file" id="uploader" accept="image/*,video/*" hidden />
+  <div class="upload-inner">
+    <div class="plus">+</div>
+    <div>Upload</div>
+  </div>
+</article>
+
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer>
+    <p>© <span id="year"></span></p>
+  </footer>
+
+  <!-- Lightbox Modal -->
+  <div id="lightbox" class="lightbox" aria-hidden="true" hidden>
+    <div class="lightbox__dialog" role="dialog" aria-modal="true" aria-label="Post viewer">
+      <button class="lightbox__close" aria-label="Close">&times;</button>
+
+      <div class="lightbox__content">
+        <div class="lightbox__media" id="lbMedia"><!-- injected --></div>
+
+        <aside class="lightbox__side">
+          <h3 class="lightbox__title">Comments</h3>
+          <ul class="lightbox__comments" id="lbComments"><!-- injected --></ul>
+
+          <form class="lightbox__form" id="lbForm">
+            <input type="text" id="lbName" placeholder="Your name" required />
+            <textarea id="lbText" rows="3" placeholder="Write a comment…" required></textarea>
+            <button type="submit" class="btn-action">Post comment</button>
+          </form>
+        </aside>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts (order matters) -->
+<!-- Entry point -->
+<script type="module" src="js/main.js"></script>
+
+</body>
+</html>
