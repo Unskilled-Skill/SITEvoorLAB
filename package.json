@@ -1,24 +1,28 @@
 {
   "name": "sitevoorlab",
   "version": "1.0.0",
-  "description": "",
-  "main": "home.js",
+  "description": "A Vite-based site project",
   "scripts": {
     "dev": "vite",
-    "build": "vite build"
+    "build": "vite build",
+    "preview": "vite preview"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Unskilled-Skill/SITEvoorLAB.git"
   },
-  "keywords": [],
+  "keywords": [
+    "vite",
+    "site",
+    "sitevoorlab"
+  ],
   "author": "",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/Unskilled-Skill/SITEvoorLAB/issues"
   },
   "homepage": "https://github.com/Unskilled-Skill/SITEvoorLAB#readme",
-  "dependencies": {
+  "devDependencies": {
     "vite": "^7.1.7"
   }
 }
