@@ -525,3 +525,369 @@ footer{
 /* (Optional) keep header lines above the logo on home page */
 .header-lines { z-index: 3; }
 .logo         { z-index: 2; position: absolute; top: 8px; right: var(--header-pad-x); }
+
+/* ===== MOBILE RESPONSIVE STYLES ===== */
+@media (max-width: 768px) {
+  /* Base mobile adjustments */
+  body {
+    padding: 8px 12px 60px; /* Reduced padding for mobile */
+  }
+  
+  /* Header mobile layout */
+  header {
+    grid-template-columns: 1fr auto;
+    height: 80px; /* Reduced header height */
+    padding: 0 10px 0 0;
+  }
+  
+  /* Logo smaller on mobile */
+  .logo {
+    width: 140px;
+    top: 4px;
+  }
+  
+  /* Header lines - thinner and closer */
+  .header-lines {
+    top: 4px;
+    gap: 0.8vh;
+  }
+  
+  .header-lines span {
+    height: 0.25rem;
+  }
+  
+  /* Hide right vertical lines on mobile */
+  .header-lines-right {
+    display: none;
+  }
+  
+  /* Main content mobile layout */
+  main {
+    padding: 0.5rem 0;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  /* Rules box mobile styling */
+  .rules-box {
+    float: none;
+    margin: 0 0 20px 0;
+    max-width: 100%;
+    order: -1; /* Move rules above feed */
+  }
+  
+  /* Feed mobile adjustments */
+  .feed {
+    padding-right: 0;
+    margin-top: 0;
+  }
+  
+  .feed-header {
+    flex-direction: column;
+    gap: 10px;
+    margin: 5px 0 15px;
+  }
+  
+  .feed-header h2 {
+    font-size: 1.4rem;
+  }
+  
+  /* Feed scroll area - full height on mobile */
+  .feed-scroll {
+    max-height: calc(100vh - 200px);
+    padding: 12px;
+  }
+  
+  /* Post grid - 2 columns on smaller tablets, 1 on phones */
+  .post-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+  
+  @media (max-width: 480px) {
+    .post-grid {
+      grid-template-columns: 1fr;
+      gap: 10px;
+    }
+  }
+  
+  /* Post cards mobile */
+  .post {
+    aspect-ratio: 1;
+  }
+  
+  .post-actions {
+    bottom: 8px;
+  }
+  
+  .btn-action {
+    padding: 6px 12px;
+    font-size: 0.9rem;
+  }
+  
+  /* Upload tile mobile */
+  .upload .upload-inner {
+    font-size: 0.9rem;
+  }
+  
+  .upload .plus {
+    width: 36px;
+    height: 36px;
+    font-size: 22px;
+  }
+  
+  /* Hero section mobile (home page) */
+  .hero {
+    padding: 0.5rem 0;
+    min-height: calc(100vh - 140px);
+  }
+  
+  .hero__inner {
+    width: 100%;
+    margin-top: 0;
+  }
+  
+  .hero__media {
+    aspect-ratio: 1; /* Square on mobile for better use of space */
+    border-radius: 12px;
+  }
+  
+  .hero__actions {
+    margin-top: 1rem;
+  }
+  
+  .btn-primary {
+    padding: 0.9rem 1.5rem;
+    font-size: 1rem;
+  }
+  
+  /* Lightbox mobile full-screen */
+  .lightbox__dialog {
+    inset: 0 !important;
+    border-radius: 0;
+  }
+  
+  .lightbox__content {
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr auto;
+  }
+  
+  .lightbox__media img,
+  .lightbox__media video {
+    max-height: 60vh;
+  }
+  
+  .lightbox__side {
+    border-left: none;
+    border-top: 1px solid rgba(0,0,0,.1);
+    max-height: 40vh;
+    padding: 12px;
+  }
+  
+  .lightbox__close {
+    top: 12px;
+    right: 12px;
+    width: 36px;
+    height: 36px;
+    font-size: 20px;
+  }
+  
+  /* Footer mobile */
+  footer {
+    padding: 8px;
+    font-size: 0.9rem;
+  }
+  
+  /* Navigation button mobile */
+  .btn-nav {
+    padding: 10px 20px;
+    font-size: 0.95rem;
+  }
+}
+
+/* Extra small phones */
+@media (max-width: 360px) {
+  body {
+    padding: 6px 8px 50px;
+  }
+  
+
+  .logo {
+    width: 120px;
+  }
+  
+  .feed-scroll {
+    padding: 8px;
+  }
+  
+  .post-grid {
+    gap: 8px;
+  }
+  
+  .btn-primary, .btn-nav {
+    width: 100%;
+    text-align: center;
+  }
+}
+
+/* Touch improvements for mobile */
+@media (hover: none) {
+  .post:hover {
+    transform: none;
+  }
+  
+  .post::after {
+    display: none;
+  }
+  
+  .post-actions {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: all;
+  }
+  
+  .post img {
+    filter: none;
+  }
+}
+
+/* Mobile-first improvements for form elements */
+@media (max-width: 768px) {
+  .lightbox__form input,
+  .lightbox__form textarea {
+    font-size: 16px; /* Prevents zoom on iOS */
+    padding: 12px;
+  }
+  
+  /* Better touch targets */
+  .btn-action, .btn-primary, .btn-nav {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .lightbox__close {
+    min-width: 44px;
+    min-height: 44px;
+  }
+    /* Fix logo sizing and positioning for mobile */
+  .logo {
+    width: 155px !important; /* Smaller fixed size for mobile */
+    height: auto;
+    top: -4px !important;
+    right: -15px !important;
+    position: absolute;
+    z-index: 2;
+  }
+  
+  /* Adjust header to accommodate smaller logo */
+  header {
+    height: 70px; /* Reduced header height */
+    padding: 0 10px 0 0;
+  }
+  
+  /* Ensure header lines don't overlap logo */
+  .header-lines {
+    right: calc(120px + 20px); /* Logo width + some padding */
+  }
+}
+
+/* Extra small phones */
+@media (max-width: 360px) {
+  .logo {
+    width: 100px !important;
+    top: 4px !important;
+    right: 8px !important;
+  }
+  
+  header {
+    height: 60px;
+  }
+  
+  .header-lines {
+    right: calc(100px + 15px);
+  }
+  /* ---------- Updated Post Actions ---------- */
+.post-actions{
+  position: absolute; 
+  left: 0; 
+  right: 0; 
+  bottom: -50px; /* Move below the post */
+  display: flex; 
+  justify-content: center; 
+  gap: 8px;
+  opacity: 0; 
+  transform: translateY(6px);
+  transition: all .15s ease; 
+  pointer-events: none;
+  background: rgba(255, 255, 255, 0.95);
+  padding: 8px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  width: 90%;
+  margin: 0 auto;
+}
+
+.post:hover .post-actions{ 
+  opacity: 1; 
+  transform: translateY(0); 
+}
+
+/* Voting buttons */
+.btn-vote {
+  background: #fff; 
+  color: #333; 
+  border: 2px solid #004dfd;
+  border-radius: 999px; 
+  padding: 6px 12px; 
+  font-weight: 800;
+  cursor: pointer; 
+  box-shadow: 0 2px 8px rgba(0,0,0,.1);
+  pointer-events: all;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.2s ease;
+}
+
+.btn-vote:hover{ 
+  background: #004dfd;
+  color: #fff;
+  transform: scale(1.05);
+}
+
+.btn-vote.upvote:hover {
+  border-color: #00c853;
+  background: #00c853;
+}
+
+.btn-vote.downvote:hover {
+  border-color: #ff1744;
+  background: #ff1744;
+}
+
+/* Comment button style update */
+.btn-action.comment-btn {
+  flex: 1;
+  max-width: 120px;
+}
+
+/* Adjust post container to accommodate actions below */
+.post-container {
+  position: relative;
+  margin-bottom: 60px; /* Space for actions below */
+}
+
+.post {
+  position: relative;
+  background: #fff;
+  border: var(--card-border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  transition: transform .14s ease, box-shadow .14s ease;
+  aspect-ratio: 1 / 1;
+  display: flex;
+  margin-bottom: 0; /* Remove any existing margin */
+}
+}
