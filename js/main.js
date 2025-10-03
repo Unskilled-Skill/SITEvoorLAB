@@ -5,6 +5,9 @@
 
 import { initLightbox } from './lightbox.js';
 
+// Firebase imports (use global SDK already loaded in index.html)
+import { ref, set, onValue } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
+
 /* ---------------------------
    Helpers: "latest post"
 ---------------------------- */
@@ -196,7 +199,7 @@ function setupImageErrorPlaceholder() {
 }
 
 /* ---------------------------
-   Per-User Voting System
+   Firebase Voting System
 ---------------------------- */
 function initializeVotingSystem() {
   let userId = localStorage.getItem('userId');
@@ -205,74 +208,43 @@ function initializeVotingSystem() {
     localStorage.setItem('userId', userId);
   }
 
-  let votes = new Map();
-  let voteCounts = new Map();
-
-  const savedVotes = localStorage.getItem('postVotes');
-  if (savedVotes) votes = new Map(JSON.parse(savedVotes));
-
-  const savedCounts = localStorage.getItem('postVoteCounts');
-  if (savedCounts) voteCounts = new Map(JSON.parse(savedCounts));
-
-  function saveVotes() {
-    localStorage.setItem('postVotes', JSON.stringify(Array.from(votes.entries())));
-    localStorage.setItem('postVoteCounts', JSON.stringify(Array.from(voteCounts.entries())));
+  function submitVote(postId, type) {
+    const voteRef = ref(window.db, `votes/${postId}/${userId}`);
+    set(voteRef, type);
   }
 
-  function updateVoteCounts(post, postId) {
+  function listenForVotes(post, postId) {
     const upvoteCountEl = post.querySelector('.upvote-count');
     const downvoteCountEl = post.querySelector('.downvote-count');
     if (!upvoteCountEl || !downvoteCountEl) return;
-    const counts = voteCounts.get(postId) || { up: 0, down: 0 };
-    upvoteCountEl.textContent = counts.up;
-    downvoteCountEl.textContent = counts.down;
+
+    const voteRef = ref(window.db, `votes/${postId}`);
+    onValue(voteRef, (snapshot) => {
+      const votes = snapshot.val() || {};
+      const up = Object.values(votes).filter(v => v === 'upvote').length;
+      const down = Object.values(votes).filter(v => v === 'downvote').length;
+      upvoteCountEl.textContent = up;
+      downvoteCountEl.textContent = down;
+    });
   }
 
-  function updateVoteUI(post, postId) {
-    const upvoteBtn = post.querySelector('.btn-vote.upvote');
-    const downvoteBtn = post.querySelector('.btn-vote.downvote');
-    if (!upvoteBtn || !downvoteBtn) return; // <-- safeguard
-    const currentVote = votes.get(postId)?.[userId] || null;
-    upvoteBtn.classList.toggle('active', currentVote === 'upvote');
-    downvoteBtn.classList.toggle('active', currentVote === 'downvote');
-  }
-
-  function handleVote(button) {
-    const post = button.closest('.post');
-    const postId = post.dataset.id;
-    const isUpvote = button.classList.contains('upvote');
-    let postVotes = votes.get(postId) || {};
-    let currentVote = postVotes[userId] || null;
-
-    if (currentVote === (isUpvote ? 'upvote' : 'downvote')) {
-      delete postVotes[userId];
-    } else {
-      postVotes[userId] = isUpvote ? 'upvote' : 'downvote';
-    }
-
-    votes.set(postId, postVotes);
-
-    const up = Object.values(postVotes).filter(v => v === 'upvote').length;
-    const down = Object.values(postVotes).filter(v => v === 'downvote').length;
-    voteCounts.set(postId, { up, down });
-
-    saveVotes();
-    updateVoteCounts(post, postId);
-    updateVoteUI(post, postId);
-  }
-
-  document.addEventListener('click', (e) => {
-    const button = e.target.closest('.btn-vote');
-    if (!button) return;
-    e.stopPropagation();
-    handleVote(button);
-  });
-
-  // init counts/UI
   document.querySelectorAll('.post').forEach(post => {
     const postId = post.dataset.id;
-    updateVoteCounts(post, postId);
-    updateVoteUI(post, postId);
+    const upvoteBtn = post.querySelector('.btn-vote.upvote');
+    const downvoteBtn = post.querySelector('.btn-vote.downvote');
+    if (!upvoteBtn || !downvoteBtn) return;
+
+    listenForVotes(post, postId);
+
+    upvoteBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      submitVote(postId, 'upvote');
+    });
+
+    downvoteBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      submitVote(postId, 'downvote');
+    });
   });
 }
 
@@ -292,9 +264,8 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   initializeVotingSystem();
-  console.log('Voting system initialized');
+  console.log('Voting system (Firebase) initialized');
 
-  // Lightbox
   const { bindOpenToPosts } = initLightbox();
   bindOpenToPosts();
   console.log('Lightbox initialized');
@@ -315,8 +286,8 @@ document.addEventListener('DOMContentLoaded', () => {
       const poster = card.querySelector('img.thumb')?.src || null;
       if (full) saveLatestPost({ type, full, poster });
 
-      // ensure new posts also get lightbox listeners
-      bindOpenToPosts();
+      // make sure Firebase listeners bind to new posts
+      initializeVotingSystem();
     },
   });
   console.log('Upload system initialized');

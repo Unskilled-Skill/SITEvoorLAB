@@ -194,10 +194,30 @@
       <button id="authPopupSignIn">Sign In</button>
     </div>
   </div>
+  <!-- Firebase setup -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+    import { getDatabase } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
 
-  <!-- Scripts (order matters) -->
+    const firebaseConfig = {
+      apiKey: "AIzaSyAsPg7svScxQijjpYNfqteLMLWH80gge4M",
+      authDomain: "labwebsite-2ab57.firebaseapp.com",
+      projectId: "labwebsite-2ab57",
+      storageBucket: "labwebsite-2ab57.firebasestorage.app",
+      messagingSenderId: "361466226719",
+      appId: "1:361466226719:web:904d5f6fc1779f8efc0d2a",
+      measurementId: "G-K8MD6033ZS",
+
+      // ✅ use your actual database URL
+      databaseURL: "https://labwebsite-2ab57-default-rtdb.europe-west1.firebasedatabase.app/"
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    window.db = getDatabase(app); // expose DB globally for main.js
+  </script>
+
   <!-- Entry point -->
   <script type="module" src="js/main.js"></script>
-
 </body>
 </html>
