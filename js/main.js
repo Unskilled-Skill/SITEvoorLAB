@@ -4,6 +4,9 @@
 // ---------------------------------------------
 
 import { initLightbox } from './lightbox.js';
+
+const { handleVote } = initializeVotingSystem(); // return handleVote function
+initLightbox(handleVote);
 let isSignedIn = false;
 /* ---------------------------
    Helpers: "latest post"
@@ -300,7 +303,6 @@ function initializeVotingSystem() {
   });
 }
 
-
 /* -----------------------
    Entry: DOM is ready
 ------------------------ */
@@ -323,7 +325,6 @@ document.addEventListener('DOMContentLoaded', () => {
   // Lightbox
   const { bindOpenToPosts } = initLightbox();
   bindOpenToPosts();
-  console.log('Lightbox initialized');
 
   // Generate posters for any static video posts
   hydrateVideoThumbnails();
