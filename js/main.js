@@ -23,6 +23,44 @@ function extractYouTubeId(url) {
   return match ? match[1] : null;
 }
 
+function computeTopPostCandidate() {
+  const metaMap = window.postMeta || {};
+  const voteCache = window.voteCache || {};
+  let best = null;
+
+  for (const [id, meta] of Object.entries(metaMap)) {
+    if (!meta || !meta.full) continue;
+    const counts = voteCache[id] || { up: 0, down: 0 };
+    const score = (counts.up || 0) - (counts.down || 0);
+    const createdAt = meta.createdAt || 0;
+
+    if (!best || score > best.score || (score === best.score && createdAt > best.createdAt)) {
+      best = { id, meta, score, createdAt };
+    }
+  }
+
+  return best;
+}
+
+function refreshStoredTopPost() {
+  const top = computeTopPostCandidate();
+  if (!top) {
+    try { localStorage.removeItem('topPost'); } catch {}
+    return;
+  }
+
+  const payload = {
+    id: top.id,
+    type: top.meta.type,
+    full: top.meta.full,
+    createdAt: top.createdAt
+  };
+
+  if (top.meta.poster) payload.poster = top.meta.poster;
+
+  try { localStorage.setItem('topPost', JSON.stringify(payload)); } catch {}
+}
+
 /* ---------------------------
    Firebase Auth
 ---------------------------- */
@@ -102,6 +140,7 @@ function listenForVotes(post, postId) {
     // Cache for sorting
     if (!window.voteCache) window.voteCache = {};
     window.voteCache[postId] = { up, down };
+    refreshStoredTopPost();
   });
 }
 
@@ -182,6 +221,15 @@ function listenForPosts() {
   const postsRef = ref(window.db, "posts");
   onValue(postsRef, (snapshot) => {
     const data = snapshot.val() || {};
+    const activeIds = new Set(Object.keys(data));
+    window.postMeta = {};
+    if (!window.voteCache) {
+      window.voteCache = {};
+    } else {
+      for (const key of Object.keys(window.voteCache)) {
+        if (!activeIds.has(key)) delete window.voteCache[key];
+      }
+    }
     grid.querySelectorAll(".post:not(.upload)").forEach(el => el.remove());
 
     let postsArray = Object.entries(data);
@@ -208,6 +256,12 @@ function listenForPosts() {
       card.dataset.id = id;
       card.dataset.type = post.type;
       card.dataset.full = post.full;
+      window.postMeta[id] = {
+        type: post.type,
+        full: post.full,
+        createdAt: post.createdAt || 0,
+        poster: post.poster || null
+      };
 
       // Render media
       if (post.type === "youtube") {
@@ -276,6 +330,7 @@ function listenForPosts() {
         submitVote(id, "downvote");
       });
     });
+    refreshStoredTopPost();
   });
 }
 
