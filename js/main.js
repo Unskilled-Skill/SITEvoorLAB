@@ -66,7 +66,6 @@ function initAuth() {
     if (user && user.email.endsWith("@student.avans.nl")) {
       const username = getUsernameFromEmail(user.email);
       console.log("Logged in as:", username);
-
       window.currentUser = { uid: user.uid, username, email: user.email };
     } else {
       console.log("Not logged in");
@@ -100,14 +99,14 @@ function listenForVotes(post, postId) {
     upvoteCountEl.textContent = up;
     downvoteCountEl.textContent = down;
 
-    // Save in cache for sorting
+    // Cache for sorting
     if (!window.voteCache) window.voteCache = {};
     window.voteCache[postId] = { up, down };
   });
 }
 
 /* ---------------------------
-   Upload new memes (URL input)
+   Upload new memes (with validation)
 ---------------------------- */
 function setupUpload() {
   const uploadTile = document.querySelector(".post.upload");
@@ -122,34 +121,58 @@ function setupUpload() {
     const url = prompt("Paste an image/video/YouTube/Imgur URL:");
     if (!url) return;
 
-    let type = "image";
+    let type = null;
 
     if (/youtube\.com|youtu\.be/.test(url)) {
       type = "youtube";
+      const videoId = extractYouTubeId(url);
+      if (!videoId) {
+        alert("Invalid YouTube URL!");
+        return;
+      }
+      await savePost(url, type);
+
     } else if (url.match(/\.(mp4|webm|ogg)$/i)) {
       type = "video";
-    } else {
+      // Optionally, could validate with <video> but browsers are lenient
+      await savePost(url, type);
+
+    } else if (url.match(/\.(jpg|jpeg|png|gif|webp)$/i)) {
       type = "image";
+      const img = new Image();
+      img.onload = async () => {
+        await savePost(url, type);
+      };
+      img.onerror = () => {
+        alert("Invalid image URL!");
+      };
+      img.src = url;
+
+    } else {
+      alert("Unsupported or invalid link!");
+      return;
     }
+  });
+}
 
-    const postsRef = ref(window.db, "posts");
-    const newPostRef = push(postsRef);
+async function savePost(url, type) {
+  const postsRef = ref(window.db, "posts");
+  const newPostRef = push(postsRef);
 
-    await set(newPostRef, {
-      userId: window.currentUser.uid,
-      username: window.currentUser.username,
-      email: window.currentUser.email,
-      type,
-      full: url,
-      createdAt: Date.now()
-    });
+  await set(newPostRef, {
+    userId: window.currentUser.uid,
+    username: window.currentUser.username,
+    email: window.currentUser.email,
+    type,
+    full: url,
+    createdAt: Date.now()
   });
 }
 
 /* ---------------------------
    Sorting & Posts
 ---------------------------- */
-let currentSort = "recent"; // default sort
+let currentSort = "recent"; // default
 
 function listenForPosts() {
   const grid = document.querySelector(".post-grid");
@@ -159,7 +182,6 @@ function listenForPosts() {
   const postsRef = ref(window.db, "posts");
   onValue(postsRef, (snapshot) => {
     const data = snapshot.val() || {};
-
     grid.querySelectorAll(".post:not(.upload)").forEach(el => el.remove());
 
     let postsArray = Object.entries(data);
@@ -172,13 +194,11 @@ function listenForPosts() {
           ? Object.values(a[1].votes).filter(v => v === "upvote").length -
             Object.values(a[1].votes).filter(v => v === "downvote").length
           : 0;
-
         const bVotes = b[1].votes
           ? Object.values(b[1].votes).filter(v => v === "upvote").length -
             Object.values(b[1].votes).filter(v => v === "downvote").length
           : 0;
-
-        return bVotes - aVotes; // higher scores first
+        return bVotes - aVotes;
       });
     }
 
@@ -223,7 +243,7 @@ function listenForPosts() {
       `;
 
       // Admin delete
-      if (window.currentUser && window.currentUser.email === "rrp.faverey@student.avans.nl") {
+      if (window.currentUser && window.currentUser.email === "marcelvanbrakel@student.avans.nl") {
         const delBtn = document.createElement("button");
         delBtn.className = "btn-delete";
         delBtn.textContent = "🗑 Delete";
@@ -275,7 +295,6 @@ document.addEventListener("DOMContentLoaded", () => {
   // Sort button handling
   function setSortMode(mode) {
     currentSort = mode;
-
     const sortRecent = document.getElementById("sortRecent");
     const sortUpvoted = document.getElementById("sortUpvoted");
 
@@ -286,7 +305,6 @@ document.addEventListener("DOMContentLoaded", () => {
       sortUpvoted.classList.add("active");
       sortRecent.classList.remove("active");
     }
-
     listenForPosts();
   }
 
@@ -296,8 +314,6 @@ document.addEventListener("DOMContentLoaded", () => {
   sortRecent?.addEventListener("click", () => setSortMode("recent"));
   sortUpvoted?.addEventListener("click", () => setSortMode("upvoted"));
 
-  // Default mode
   setSortMode("recent");
-
   console.log("All systems ready!");
 });
