@@ -1,8 +1,4 @@
 // js/main.js
-// ---------------------------------------------
-// Auth + Posts + Voting + Upload (URL-based) + Lightbox
-// ---------------------------------------------
-
 import { ref, set, push, onValue } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
 import {
   signInWithEmailAndPassword,
@@ -22,7 +18,8 @@ function getUsernameFromEmail(email) {
 }
 
 function extractYouTubeId(url) {
-  const match = url.match(/(?:youtube\.com\/.*v=|youtu\.be\/)([^&]+)/);
+  // Supports normal YT, Shorts, and youtu.be
+  const match = url.match(/(?:youtube\.com\/(?:watch\?v=|shorts\/)|youtu\.be\/)([^&?/]+)/);
   return match ? match[1] : null;
 }
 
@@ -70,18 +67,9 @@ function initAuth() {
       const username = getUsernameFromEmail(user.email);
       console.log("Logged in as:", username);
 
-      loginBtn.hidden = true;
-      regBtn.hidden = true;
-      logoutBtn.hidden = false;
-
       window.currentUser = { uid: user.uid, username, email: user.email };
     } else {
       console.log("Not logged in");
-
-      loginBtn.hidden = false;
-      regBtn.hidden = false;
-      logoutBtn.hidden = true;
-
       window.currentUser = null;
     }
   });
@@ -90,48 +78,31 @@ function initAuth() {
 /* ---------------------------
    Voting System
 ---------------------------- */
-function initializeVotingSystem() {
-  function submitVote(postId, type) {
-    if (!window.currentUser) {
-      alert("You must be logged in to vote!");
-      return;
-    }
-    const voteRef = ref(window.db, `votes/${postId}/${window.currentUser.uid}`);
-    set(voteRef, type);
+function submitVote(postId, type) {
+  if (!window.currentUser) {
+    alert("You must be logged in to vote!");
+    return;
   }
+  const voteRef = ref(window.db, `votes/${postId}/${window.currentUser.uid}`);
+  set(voteRef, type);
+}
 
-  function listenForVotes(post, postId) {
-    const upvoteCountEl = post.querySelector(".upvote-count");
-    const downvoteCountEl = post.querySelector(".downvote-count");
-    if (!upvoteCountEl || !downvoteCountEl) return;
+function listenForVotes(post, postId) {
+  const upvoteCountEl = post.querySelector(".upvote-count");
+  const downvoteCountEl = post.querySelector(".downvote-count");
+  if (!upvoteCountEl || !downvoteCountEl) return;
 
-    const voteRef = ref(window.db, `votes/${postId}`);
-    onValue(voteRef, (snapshot) => {
-      const votes = snapshot.val() || {};
-      const up = Object.values(votes).filter((v) => v === "upvote").length;
-      const down = Object.values(votes).filter((v) => v === "downvote").length;
-      upvoteCountEl.textContent = up;
-      downvoteCountEl.textContent = down;
-    });
-  }
+  const voteRef = ref(window.db, `votes/${postId}`);
+  onValue(voteRef, (snapshot) => {
+    const votes = snapshot.val() || {};
+    const up = Object.values(votes).filter((v) => v === "upvote").length;
+    const down = Object.values(votes).filter((v) => v === "downvote").length;
+    upvoteCountEl.textContent = up;
+    downvoteCountEl.textContent = down;
 
-  document.querySelectorAll(".post").forEach((post) => {
-    if (post.classList.contains("upload")) return;
-    const postId = post.dataset.id;
-    const upvoteBtn = post.querySelector(".btn-vote.upvote");
-    const downvoteBtn = post.querySelector(".btn-vote.downvote");
-
-    listenForVotes(post, postId);
-
-    upvoteBtn?.addEventListener("click", (e) => {
-      e.stopPropagation();
-      submitVote(postId, "upvote");
-    });
-
-    downvoteBtn?.addEventListener("click", (e) => {
-      e.stopPropagation();
-      submitVote(postId, "downvote");
-    });
+    // Save in cache for sorting
+    if (!window.voteCache) window.voteCache = {};
+    window.voteCache[postId] = { up, down };
   });
 }
 
@@ -176,8 +147,10 @@ function setupUpload() {
 }
 
 /* ---------------------------
-   Listen for posts (live feed)
+   Sorting & Posts
 ---------------------------- */
+let currentSort = "recent"; // default sort
+
 function listenForPosts() {
   const grid = document.querySelector(".post-grid");
   const uploadTile = document.querySelector(".post.upload");
@@ -189,67 +162,100 @@ function listenForPosts() {
 
     grid.querySelectorAll(".post:not(.upload)").forEach(el => el.remove());
 
-    Object.entries(data)
-      .sort((a, b) => b[1].createdAt - a[1].createdAt)
-      .forEach(([id, post]) => {
-        const card = document.createElement("article");
-        card.className = "post";
-        card.dataset.id = id;
-        card.dataset.type = post.type;
-        card.dataset.full = post.full;
+    let postsArray = Object.entries(data);
 
-        if (post.type === "youtube") {
-          const videoId = extractYouTubeId(post.full);
-          if (videoId) {
-            const iframe = document.createElement("iframe");
-            iframe.src = `https://www.youtube.com/embed/${videoId}`;
-            iframe.width = "100%";
-            iframe.height = "315";
-            iframe.allowFullscreen = true;
-            card.appendChild(iframe);
+    if (currentSort === "recent") {
+      postsArray.sort((a, b) => b[1].createdAt - a[1].createdAt);
+    } else if (currentSort === "upvoted") {
+      postsArray.sort((a, b) => {
+        const aVotes = a[1].votes
+          ? Object.values(a[1].votes).filter(v => v === "upvote").length -
+            Object.values(a[1].votes).filter(v => v === "downvote").length
+          : 0;
+
+        const bVotes = b[1].votes
+          ? Object.values(b[1].votes).filter(v => v === "upvote").length -
+            Object.values(b[1].votes).filter(v => v === "downvote").length
+          : 0;
+
+        return bVotes - aVotes; // higher scores first
+      });
+    }
+
+    postsArray.forEach(([id, post]) => {
+      const card = document.createElement("article");
+      card.className = "post";
+      card.dataset.id = id;
+      card.dataset.type = post.type;
+      card.dataset.full = post.full;
+
+      // Render media
+      if (post.type === "youtube") {
+        const videoId = extractYouTubeId(post.full);
+        if (videoId) {
+          const iframe = document.createElement("iframe");
+          iframe.src = `https://www.youtube.com/embed/${videoId}`;
+          iframe.width = "100%";
+          iframe.height = "315";
+          iframe.allowFullscreen = true;
+          card.appendChild(iframe);
+        }
+      } else if (post.type === "video") {
+        const video = document.createElement("video");
+        video.src = post.full;
+        video.controls = true;
+        card.appendChild(video);
+      } else {
+        const img = document.createElement("img");
+        img.src = post.full;
+        img.alt = "Uploaded image";
+        img.loading = "lazy";
+        card.appendChild(img);
+      }
+
+      // Actions
+      const actions = document.createElement("div");
+      actions.className = "post-actions";
+      actions.innerHTML = `
+        <button class="btn-vote upvote">▲ <span class="upvote-count">0</span></button>
+        <button class="btn-vote downvote">▼ <span class="downvote-count">0</span></button>
+        <button class="btn-action">Comment</button>
+      `;
+
+      // Admin delete
+      if (window.currentUser && window.currentUser.email === "rrp.faverey@student.avans.nl") {
+        const delBtn = document.createElement("button");
+        delBtn.className = "btn-delete";
+        delBtn.textContent = "🗑 Delete";
+        delBtn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          if (confirm("Are you sure you want to delete this post?")) {
+            const postRef = ref(window.db, `posts/${id}`);
+            set(postRef, null);
           }
-        } else if (post.type === "video") {
-          const video = document.createElement("video");
-          video.src = post.full;
-          video.controls = true;
-          card.appendChild(video);
-        } else {
-          const img = document.createElement("img");
-          img.src = post.full;
-          img.alt = "Uploaded image";
-          img.loading = "lazy";
-          card.appendChild(img);
-        }
+        });
+        actions.appendChild(delBtn);
+      }
 
-        const actions = document.createElement("div");
-        actions.className = "post-actions";
-        actions.innerHTML = `
-          <button class="btn-vote upvote">▲ <span class="upvote-count">0</span></button>
-          <button class="btn-vote downvote">▼ <span class="downvote-count">0</span></button>
-          <button class="btn-action">Comment</button>
-        `;
+      card.appendChild(actions);
+      grid.insertBefore(card, uploadTile);
 
-        // ✅ delete button for owner account
-        if (window.currentUser && window.currentUser.email === "rrp.faverey@student.avans.nl") {
-          const delBtn = document.createElement("button");
-          delBtn.className = "btn-delete";
-          delBtn.textContent = "🗑 Delete";
-          delBtn.addEventListener("click", (e) => {
-            e.stopPropagation();
-            if (confirm("Are you sure you want to delete this post?")) {
-              const postRef = ref(window.db, `posts/${id}`);
-              set(postRef, null);
-            }
-          });
-          actions.appendChild(delBtn);
-        }
+      // Voting listeners
+      listenForVotes(card, id);
 
-        card.appendChild(actions);
+      const upvoteBtn = card.querySelector(".btn-vote.upvote");
+      const downvoteBtn = card.querySelector(".btn-vote.downvote");
 
-        grid.insertBefore(card, uploadTile);
+      upvoteBtn?.addEventListener("click", (e) => {
+        e.stopPropagation();
+        submitVote(id, "upvote");
       });
 
-    initializeVotingSystem();
+      downvoteBtn?.addEventListener("click", (e) => {
+        e.stopPropagation();
+        submitVote(id, "downvote");
+      });
+    });
   });
 }
 
@@ -262,10 +268,36 @@ document.addEventListener("DOMContentLoaded", () => {
   initAuth();
   listenForPosts();
   setupUpload();
-  initializeVotingSystem();
 
   const { bindOpenToPosts } = initLightbox();
   bindOpenToPosts();
+
+  // Sort button handling
+  function setSortMode(mode) {
+    currentSort = mode;
+
+    const sortRecent = document.getElementById("sortRecent");
+    const sortUpvoted = document.getElementById("sortUpvoted");
+
+    if (mode === "recent") {
+      sortRecent.classList.add("active");
+      sortUpvoted.classList.remove("active");
+    } else if (mode === "upvoted") {
+      sortUpvoted.classList.add("active");
+      sortRecent.classList.remove("active");
+    }
+
+    listenForPosts();
+  }
+
+  const sortRecent = document.getElementById("sortRecent");
+  const sortUpvoted = document.getElementById("sortUpvoted");
+
+  sortRecent?.addEventListener("click", () => setSortMode("recent"));
+  sortUpvoted?.addEventListener("click", () => setSortMode("upvoted"));
+
+  // Default mode
+  setSortMode("recent");
 
   console.log("All systems ready!");
 });

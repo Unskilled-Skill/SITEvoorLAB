@@ -3,19 +3,32 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Avans Meme Feed</title>
+  <title>Avans Fails Feed</title>
   <link rel="stylesheet" href="style.css"/>
 </head>
 <body class="home">
   <!-- Header -->
   <header>
+    <!-- Top blue lines -->
+    <div class="header-lines">
+      <span></span><span></span><span></span><span></span><span></span>
+    </div>
     <img src="images/logo.png" alt="Site Logo" class="logo"/>
+
+    <!-- Right-side vertical lines -->
+    <div class="header-lines-right">
+      <span></span><span></span><span></span><span></span><span></span>
+    </div>
   </header>
 
   <!-- Main Feed -->
   <section class="feed">
     <header class="feed-header">
-      <h2>Latest Posts</h2>
+      <h2>Posts</h2>
+      <div class="sort-buttons">
+        <button id="sortRecent" class="active">Most Recent</button>
+        <button id="sortUpvoted">Most Upvoted</button>
+      </div>
     </header>
 
     <div class="feed-scroll">
@@ -44,54 +57,55 @@
     </div>
   </section>
 
-  <!-- Auth UI -->
+  <!-- Auth UI (always bottom-left, shrinks to logout when logged in) -->
   <div id="loginPopup">
     <h3>Avans Login</h3>
-    <input type="email" id="loginEmail" placeholder="Your Avans email" />
-    <input type="password" id="loginPassword" placeholder="Password" />
-    <button id="loginBtn">Login</button>
-    <button id="registerBtn">Register</button>
+    <div class="login-form">
+      <input type="email" id="loginEmail" placeholder="Your Avans email" />
+      <input type="password" id="loginPassword" placeholder="Password" />
+      <button id="loginBtn">Login</button>
+      <button id="registerBtn">Register</button>
+    </div>
     <button id="logoutBtn" hidden>Logout</button>
   </div>
 
-<!-- Lightbox Modal -->
-<div id="lightbox" class="lightbox" hidden>
-  <div class="lightbox__dialog" role="dialog" aria-modal="true">
-    <!-- Close button -->
-    <button class="lightbox__close" aria-label="Close">&times;</button>
+  <!-- Lightbox Modal -->
+  <div id="lightbox" class="lightbox" hidden>
+    <div class="lightbox__dialog" role="dialog" aria-modal="true">
+      <!-- Close button -->
+      <button class="lightbox__close" aria-label="Close">&times;</button>
 
-    <div class="lightbox__content">
-      <!-- Media (image/video) -->
-      <div class="lightbox__media" id="lbMedia"></div>
+      <div class="lightbox__content">
+        <!-- Media (image/video) -->
+        <div class="lightbox__media" id="lbMedia"></div>
 
-      <!-- Comments sidebar -->
-      <aside class="lightbox__side">
-        <h3 class="lightbox__title">Comments</h3>
-        <ul class="lightbox__comments" id="lbComments">
-          <!-- comments injected here -->
-        </ul>
+        <!-- Comments sidebar -->
+        <aside class="lightbox__side">
+          <h3 class="lightbox__title">Comments</h3>
+          <ul class="lightbox__comments" id="lbComments">
+            <!-- comments injected here -->
+          </ul>
 
-        <!-- Comment form -->
-        <form class="lightbox__form" id="lbForm">
-          <textarea id="lbText" rows="3" placeholder="Write a comment…" required></textarea>
-          <button type="submit" class="btn-action">Post comment</button>
-        </form>
-      </aside>
+          <!-- Comment form -->
+          <form class="lightbox__form" id="lbForm">
+            <textarea id="lbText" rows="3" placeholder="Write a comment…" required></textarea>
+            <button type="submit" class="btn-action">Post comment</button>
+          </form>
+        </aside>
+      </div>
     </div>
   </div>
-</div>
-
 
   <!-- Footer -->
   <footer>
-    <p>© <span id="year"></span></p>
+    <p>© <span id="year"></span> Avans Fails Feed</p>
   </footer>
 
   <!-- Firebase setup -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
     import { getDatabase } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
-    import { getAuth } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyAsPg7svScxQijjpYNfqteLMLWH80gge4M",
@@ -107,6 +121,31 @@
     const app = initializeApp(firebaseConfig);
     window.db = getDatabase(app);
     window.auth = getAuth(app);
+
+    // Footer year
+    document.addEventListener("DOMContentLoaded", () => {
+      document.getElementById("year").textContent = new Date().getFullYear();
+    });
+
+    // Toggle login box state
+    onAuthStateChanged(window.auth, (user) => {
+      const loginPopup = document.getElementById("loginPopup");
+      const logoutBtn = document.getElementById("logoutBtn");
+      const loginBtn = document.getElementById("loginBtn");
+      const regBtn = document.getElementById("registerBtn");
+
+      if (user && user.email.endsWith("@student.avans.nl")) {
+        loginPopup.classList.add("logged-in");
+        logoutBtn.hidden = false;
+        loginBtn.hidden = true;
+        regBtn.hidden = true;
+      } else {
+        loginPopup.classList.remove("logged-in");
+        logoutBtn.hidden = true;
+        loginBtn.hidden = false;
+        regBtn.hidden = false;
+      }
+    });
   </script>
 
   <!-- Entry point -->

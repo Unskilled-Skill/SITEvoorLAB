@@ -19,7 +19,6 @@ export function initLightbox() {
     if (!full) return;
 
     currentPostId = id;
-
     lbMedia.innerHTML = "";
 
     if (article.dataset.type === "youtube") {
@@ -107,6 +106,7 @@ export function initLightbox() {
 }
 
 function extractYouTubeId(url) {
-  const match = url.match(/(?:youtube\.com\/.*v=|youtu\.be\/)([^&]+)/);
+  // Supports watch?v=, youtu.be/, and shorts/
+  const match = url.match(/(?:youtube\.com\/(?:watch\?v=|shorts\/)|youtu\.be\/)([^&?/]+)/);
   return match ? match[1] : null;
 }
