@@ -1,299 +1,271 @@
 // js/main.js
 // ---------------------------------------------
-// Entry for the feed + uploads + video posters
+// Auth + Posts + Voting + Upload (URL-based) + Lightbox
 // ---------------------------------------------
 
-import { initLightbox } from './lightbox.js';
+import { ref, set, push, onValue } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
+import {
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  signOut,
+  onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
 
-// Firebase imports (use global SDK already loaded in index.html)
-import { ref, set, onValue } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
-
-/* ---------------------------
-   Helpers: "latest post"
----------------------------- */
-function saveLatestPost(obj) {
-  try { localStorage.setItem('latestPost', JSON.stringify(obj)); } catch {}
-}
-
-function updateLatestFromDocument() {
-  const first = document.querySelector('.post-grid .post:not(.upload)');
-  if (!first) return;
-  const type = first.getAttribute('data-type') || 'image';
-  const full = first.getAttribute('data-full');
-  if (!full) return;
-  const poster = first.querySelector('img.thumb')?.src || null;
-  saveLatestPost({ type, full, poster });
-}
+import { initLightbox } from "./lightbox.js";
 
 /* ---------------------------
-   Helpers: posters for video
+   Helpers
 ---------------------------- */
-async function generatePoster(src, atSec = 0.1) {
-  return new Promise((resolve, reject) => {
-    const video = document.createElement('video');
-    video.crossOrigin = 'anonymous';
-    video.preload = 'auto';
-    video.muted = true;
-    video.src = src;
-
-    const bail = () => reject(new Error('Could not load video: ' + src));
-    video.addEventListener('error', bail, { once: true });
-
-    video.addEventListener('loadeddata', async () => {
-      try {
-        const target = Math.min(atSec, (video.duration || 1) - 0.05);
-        if (!Number.isNaN(target)) {
-          await new Promise((r) => {
-            const on = () => { video.removeEventListener('seeked', on); r(); };
-            video.addEventListener('seeked', on);
-            video.currentTime = target;
-          });
-        }
-        const w = video.videoWidth || 640;
-        const h = video.videoHeight || 360;
-        const canvas = document.createElement('canvas');
-        canvas.width = w;
-        canvas.height = h;
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(video, 0, 0, w, h);
-        resolve(canvas.toDataURL('image/jpeg', 0.85));
-      } catch (err) {
-        reject(err);
-      }
-    }, { once: true });
-  });
+function getUsernameFromEmail(email) {
+  if (!email.endsWith("@student.avans.nl")) return null;
+  return email.split("@")[0];
 }
 
-async function hydrateVideoThumbnails() {
-  const cards = document.querySelectorAll('.post[data-type="video"]');
-  for (const card of cards) {
+function extractYouTubeId(url) {
+  const match = url.match(/(?:youtube\.com\/.*v=|youtu\.be\/)([^&]+)/);
+  return match ? match[1] : null;
+}
+
+/* ---------------------------
+   Firebase Auth
+---------------------------- */
+function initAuth() {
+  const emailInput = document.getElementById("loginEmail");
+  const passInput = document.getElementById("loginPassword");
+  const loginBtn = document.getElementById("loginBtn");
+  const regBtn = document.getElementById("registerBtn");
+  const logoutBtn = document.getElementById("logoutBtn");
+
+  regBtn.addEventListener("click", async () => {
+    const email = emailInput.value.trim();
+    const pass = passInput.value.trim();
+    if (!email.endsWith("@student.avans.nl")) {
+      alert("Only @student.avans.nl accounts are allowed!");
+      return;
+    }
     try {
-      const full = card.getAttribute('data-full');
-      if (!full) continue;
-
-      let img = card.querySelector('img.thumb');
-      if (!img) {
-        img = document.createElement('img');
-        img.className = 'thumb';
-        img.alt = 'Video thumbnail';
-        card.prepend(img);
-      }
-
-      const key = 'poster:' + full;
-      let poster = sessionStorage.getItem(key);
-      if (!poster) {
-        poster = await generatePoster(full, 0.12);
-        sessionStorage.setItem(key, poster);
-      }
-      img.src = poster;
-
-      if (!card.querySelector('.play-badge')) {
-        const badge = document.createElement('span');
-        badge.className = 'play-badge';
-        badge.textContent = '▶';
-        badge.setAttribute('aria-hidden', 'true');
-        card.appendChild(badge);
-      }
+      await createUserWithEmailAndPassword(window.auth, email, pass);
+      alert("Account created!");
     } catch (err) {
-      console.warn('Poster generation failed:', err);
+      alert("Error: " + err.message);
     }
-  }
-}
-
-/* --------------------------------------
-   Upload tile → add image/video to grid
---------------------------------------- */
-function setupUpload({ onAfterAdd }) {
-  const grid = document.querySelector('.post-grid');
-  const uploadTile = document.querySelector('.post.upload');
-  if (!grid || !uploadTile) return;
-
-  let fileInput = uploadTile.querySelector('input[type="file"]');
-  if (!fileInput) {
-    fileInput = document.createElement('input');
-    fileInput.type = 'file';
-    fileInput.accept = 'image/*,video/*';
-    fileInput.hidden = true;
-    uploadTile.appendChild(fileInput);
-  }
-
-  uploadTile.addEventListener('click', () => fileInput.click());
-
-  fileInput.addEventListener('change', async (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    const url = URL.createObjectURL(file);
-    const isVideo = file.type.startsWith('video/');
-    const id = `u_${Date.now()}`;
-
-    const card = document.createElement('article');
-    card.className = 'post';
-    card.setAttribute('data-id', id);
-    card.setAttribute('data-type', isVideo ? 'video' : 'image');
-    card.setAttribute('data-full', url);
-
-    if (isVideo) {
-      const img = document.createElement('img');
-      img.className = 'thumb';
-      img.alt = 'Uploaded video thumbnail';
-      card.appendChild(img);
-      try { img.src = await generatePoster(url, 0.15); } catch {}
-      const badge = document.createElement('span');
-      badge.className = 'play-badge';
-      badge.textContent = '▶';
-      badge.setAttribute('aria-hidden', 'true');
-      card.appendChild(badge);
-    } else {
-      const img = document.createElement('img');
-      img.src = url;
-      img.alt = 'Uploaded image';
-      img.loading = 'lazy';
-      card.appendChild(img);
-    }
-
-    // Post actions
-    const actions = document.createElement('div');
-    actions.className = 'post-actions';
-
-    const upvoteBtn = document.createElement('button');
-    upvoteBtn.className = 'btn-vote upvote';
-    upvoteBtn.title = 'Upvote';
-    upvoteBtn.innerHTML = '▲ <span class="upvote-count">0</span>';
-    actions.appendChild(upvoteBtn);
-
-    const downvoteBtn = document.createElement('button');
-    downvoteBtn.className = 'btn-vote downvote';
-    downvoteBtn.title = 'Downvote';
-    downvoteBtn.innerHTML = '▼ <span class="downvote-count">0</span>';
-    actions.appendChild(downvoteBtn);
-
-    const commentBtn = document.createElement('button');
-    commentBtn.className = 'btn-action';
-    commentBtn.textContent = 'Comment';
-    actions.appendChild(commentBtn);
-
-    card.appendChild(actions);
-
-    grid.insertBefore(card, uploadTile);
-
-    if (typeof onAfterAdd === 'function') onAfterAdd(card);
-
-    fileInput.value = '';
   });
-}
 
-/* --------------------------------------
-   Broken image helper
---------------------------------------- */
-function setupImageErrorPlaceholder() {
-  document.querySelectorAll('.post img').forEach((img) => {
-    img.addEventListener('error', () => {
-      console.warn('Image not found:', img.getAttribute('src'));
-      const ph = document.createElement('div');
-      ph.className = 'post__placeholder';
-      ph.textContent = 'Image not found';
-      img.replaceWith(ph);
-    });
+  loginBtn.addEventListener("click", async () => {
+    const email = emailInput.value.trim();
+    const pass = passInput.value.trim();
+    try {
+      await signInWithEmailAndPassword(window.auth, email, pass);
+    } catch (err) {
+      alert("Login failed: " + err.message);
+    }
+  });
+
+  logoutBtn.addEventListener("click", async () => {
+    await signOut(window.auth);
+  });
+
+  onAuthStateChanged(window.auth, (user) => {
+    if (user && user.email.endsWith("@student.avans.nl")) {
+      const username = getUsernameFromEmail(user.email);
+      console.log("Logged in as:", username);
+
+      loginBtn.hidden = true;
+      regBtn.hidden = true;
+      logoutBtn.hidden = false;
+
+      window.currentUser = { uid: user.uid, username, email: user.email };
+    } else {
+      console.log("Not logged in");
+
+      loginBtn.hidden = false;
+      regBtn.hidden = false;
+      logoutBtn.hidden = true;
+
+      window.currentUser = null;
+    }
   });
 }
 
 /* ---------------------------
-   Firebase Voting System
+   Voting System
 ---------------------------- */
 function initializeVotingSystem() {
-  let userId = localStorage.getItem('userId');
-  if (!userId) {
-    userId = crypto.randomUUID();
-    localStorage.setItem('userId', userId);
-  }
-
   function submitVote(postId, type) {
-    const voteRef = ref(window.db, `votes/${postId}/${userId}`);
+    if (!window.currentUser) {
+      alert("You must be logged in to vote!");
+      return;
+    }
+    const voteRef = ref(window.db, `votes/${postId}/${window.currentUser.uid}`);
     set(voteRef, type);
   }
 
   function listenForVotes(post, postId) {
-    const upvoteCountEl = post.querySelector('.upvote-count');
-    const downvoteCountEl = post.querySelector('.downvote-count');
+    const upvoteCountEl = post.querySelector(".upvote-count");
+    const downvoteCountEl = post.querySelector(".downvote-count");
     if (!upvoteCountEl || !downvoteCountEl) return;
 
     const voteRef = ref(window.db, `votes/${postId}`);
     onValue(voteRef, (snapshot) => {
       const votes = snapshot.val() || {};
-      const up = Object.values(votes).filter(v => v === 'upvote').length;
-      const down = Object.values(votes).filter(v => v === 'downvote').length;
+      const up = Object.values(votes).filter((v) => v === "upvote").length;
+      const down = Object.values(votes).filter((v) => v === "downvote").length;
       upvoteCountEl.textContent = up;
       downvoteCountEl.textContent = down;
     });
   }
 
-  document.querySelectorAll('.post').forEach(post => {
+  document.querySelectorAll(".post").forEach((post) => {
+    if (post.classList.contains("upload")) return;
     const postId = post.dataset.id;
-    const upvoteBtn = post.querySelector('.btn-vote.upvote');
-    const downvoteBtn = post.querySelector('.btn-vote.downvote');
-    if (!upvoteBtn || !downvoteBtn) return;
+    const upvoteBtn = post.querySelector(".btn-vote.upvote");
+    const downvoteBtn = post.querySelector(".btn-vote.downvote");
 
     listenForVotes(post, postId);
 
-    upvoteBtn.addEventListener('click', (e) => {
+    upvoteBtn?.addEventListener("click", (e) => {
       e.stopPropagation();
-      submitVote(postId, 'upvote');
+      submitVote(postId, "upvote");
     });
 
-    downvoteBtn.addEventListener('click', (e) => {
+    downvoteBtn?.addEventListener("click", (e) => {
       e.stopPropagation();
-      submitVote(postId, 'downvote');
+      submitVote(postId, "downvote");
     });
   });
 }
 
+/* ---------------------------
+   Upload new memes (URL input)
+---------------------------- */
+function setupUpload() {
+  const uploadTile = document.querySelector(".post.upload");
+  if (!uploadTile) return;
+
+  uploadTile.addEventListener("click", async () => {
+    if (!window.currentUser) {
+      alert("You must be logged in to upload a meme!");
+      return;
+    }
+
+    const url = prompt("Paste an image/video/YouTube/Imgur URL:");
+    if (!url) return;
+
+    let type = "image";
+
+    if (/youtube\.com|youtu\.be/.test(url)) {
+      type = "youtube";
+    } else if (url.match(/\.(mp4|webm|ogg)$/i)) {
+      type = "video";
+    } else {
+      type = "image";
+    }
+
+    const postsRef = ref(window.db, "posts");
+    const newPostRef = push(postsRef);
+
+    await set(newPostRef, {
+      userId: window.currentUser.uid,
+      username: window.currentUser.username,
+      email: window.currentUser.email,
+      type,
+      full: url,
+      createdAt: Date.now()
+    });
+  });
+}
+
+/* ---------------------------
+   Listen for posts (live feed)
+---------------------------- */
+function listenForPosts() {
+  const grid = document.querySelector(".post-grid");
+  const uploadTile = document.querySelector(".post.upload");
+  if (!grid) return;
+
+  const postsRef = ref(window.db, "posts");
+  onValue(postsRef, (snapshot) => {
+    const data = snapshot.val() || {};
+
+    grid.querySelectorAll(".post:not(.upload)").forEach(el => el.remove());
+
+    Object.entries(data)
+      .sort((a, b) => b[1].createdAt - a[1].createdAt)
+      .forEach(([id, post]) => {
+        const card = document.createElement("article");
+        card.className = "post";
+        card.dataset.id = id;
+        card.dataset.type = post.type;
+        card.dataset.full = post.full;
+
+        if (post.type === "youtube") {
+          const videoId = extractYouTubeId(post.full);
+          if (videoId) {
+            const iframe = document.createElement("iframe");
+            iframe.src = `https://www.youtube.com/embed/${videoId}`;
+            iframe.width = "100%";
+            iframe.height = "315";
+            iframe.allowFullscreen = true;
+            card.appendChild(iframe);
+          }
+        } else if (post.type === "video") {
+          const video = document.createElement("video");
+          video.src = post.full;
+          video.controls = true;
+          card.appendChild(video);
+        } else {
+          const img = document.createElement("img");
+          img.src = post.full;
+          img.alt = "Uploaded image";
+          img.loading = "lazy";
+          card.appendChild(img);
+        }
+
+        const actions = document.createElement("div");
+        actions.className = "post-actions";
+        actions.innerHTML = `
+          <button class="btn-vote upvote">▲ <span class="upvote-count">0</span></button>
+          <button class="btn-vote downvote">▼ <span class="downvote-count">0</span></button>
+          <button class="btn-action">Comment</button>
+        `;
+
+        // ✅ delete button for owner account
+        if (window.currentUser && window.currentUser.email === "rrp.faverey@student.avans.nl") {
+          const delBtn = document.createElement("button");
+          delBtn.className = "btn-delete";
+          delBtn.textContent = "🗑 Delete";
+          delBtn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            if (confirm("Are you sure you want to delete this post?")) {
+              const postRef = ref(window.db, `posts/${id}`);
+              set(postRef, null);
+            }
+          });
+          actions.appendChild(delBtn);
+        }
+
+        card.appendChild(actions);
+
+        grid.insertBefore(card, uploadTile);
+      });
+
+    initializeVotingSystem();
+  });
+}
+
 /* -----------------------
-   Entry: DOM is ready
+   DOM Ready
 ------------------------ */
-document.addEventListener('DOMContentLoaded', () => {
-  console.log('DOM loaded - initializing...');
+document.addEventListener("DOMContentLoaded", () => {
+  document.getElementById("year").textContent = new Date().getFullYear();
 
-  const yearEl = document.getElementById('year');
-  if (yearEl) yearEl.textContent = new Date().getFullYear();
-
-  let userId = localStorage.getItem('userId');
-  if (!userId) {
-    userId = crypto.randomUUID();
-    localStorage.setItem('userId', userId);
-  }
-
+  initAuth();
+  listenForPosts();
+  setupUpload();
   initializeVotingSystem();
-  console.log('Voting system (Firebase) initialized');
 
   const { bindOpenToPosts } = initLightbox();
   bindOpenToPosts();
-  console.log('Lightbox initialized');
 
-  hydrateVideoThumbnails();
-  console.log('Video thumbnails hydrated');
-
-  updateLatestFromDocument();
-  console.log('Latest post updated');
-
-  setupUpload({
-    onAfterAdd: (card) => {
-      if (card.getAttribute('data-type') === 'video') {
-        hydrateVideoThumbnails();
-      }
-      const type = card.getAttribute('data-type') || 'image';
-      const full = card.getAttribute('data-full');
-      const poster = card.querySelector('img.thumb')?.src || null;
-      if (full) saveLatestPost({ type, full, poster });
-
-      // make sure Firebase listeners bind to new posts
-      initializeVotingSystem();
-    },
-  });
-  console.log('Upload system initialized');
-
-  setupImageErrorPlaceholder();
-  console.log('Image error handling initialized');
-
-  console.log('All systems ready!');
+  console.log("All systems ready!");
 });

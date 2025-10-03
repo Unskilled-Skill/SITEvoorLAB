@@ -3,201 +3,95 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Blank Starter</title>
+  <title>Avans Meme Feed</title>
   <link rel="stylesheet" href="style.css"/>
 </head>
 <body class="home">
   <!-- Header -->
   <header>
-    <!-- Top blue lines -->
-    <div class="header-lines">
-      <span></span><span></span><span></span><span></span><span></span>
-    </div>
-
-    <!-- Right-side vertical lines -->
-    <div class="header-lines-right">
-      <span></span><span></span><span></span><span></span><span></span>
-    </div>
-
-    <!-- Logo -->
     <img src="images/logo.png" alt="Site Logo" class="logo"/>
   </header>
 
-  <!-- Main -->
-    <section class="feed">
-      
-      <header class="feed-header">
-        <h2>Latest Posts</h2>
-        <a href="home.html" class="btn-nav">View Latest</a>
-      </header>
+  <!-- Main Feed -->
+  <section class="feed">
+    <header class="feed-header">
+      <h2>Latest Posts</h2>
+    </header>
 
-      <div class="feed-scroll">
-        <div class="post-grid">
-          <!-- Post 1 -->
-          <article class="post" data-id="m1" data-type="image" data-full="images/full/m1.jpg">
-            <div class="post-media">
-              <img src="images/memes/m1.jpg" alt="Post 1" loading="lazy"/>
-            </div>
-            <div class="post-actions">
-            <button class="btn-vote upvote" title="Upvote">
-              ▲ <span class="upvote-count">0</span>
-            </button>
-            <button class="btn-vote downvote" title="Downvote">
-              ▼ <span class="downvote-count">0</span>
-            </button>
-              <button class="btn-action">Comment</button>
-            </div>
-          </article>
+    <div class="feed-scroll">
+      <div class="post-grid">
+        <!-- Example post -->
+        <article class="post" data-id="m1" data-type="image" data-full="images/full/m1.jpg">
+          <div class="post-media">
+            <img src="images/memes/m1.jpg" alt="Post 1" loading="lazy"/>
+          </div>
+          <div class="post-actions">
+            <button class="btn-vote upvote">▲ <span class="upvote-count">0</span></button>
+            <button class="btn-vote downvote">▼ <span class="downvote-count">0</span></button>
+            <button class="btn-action">Comment</button>
+          </div>
+        </article>
 
-          <!-- Post 2 -->
-          <article class="post" data-id="m2" data-type="image" data-full="images/full/m2.jpg">
-            <div class="post-media">
-              <img src="images/memes/m2.jpg" alt="Post 2" loading="lazy"/>
-            </div>
-            <div class="post-actions">
-            <button class="btn-vote upvote" title="Upvote">
-              ▲ <span class="upvote-count">0</span>
-            </button>
-            <button class="btn-vote downvote" title="Downvote">
-              ▼ <span class="downvote-count">0</span>
-            </button>
-              <button class="btn-action">Comment</button>
-            </div>
-          </article>
-
-          <!-- Post 3 -->
-          <article class="post" data-id="m3" data-type="image" data-full="images/full/m3.jpg">
-            <div class="post-media">
-              <img src="images/memes/m3.jpg" alt="Post 3" loading="lazy"/>
-            </div>
-            <div class="post-actions">
-            <button class="btn-vote upvote" title="Upvote">
-              ▲ <span class="upvote-count">0</span>
-            </button>
-            <button class="btn-vote downvote" title="Downvote">
-              ▼ <span class="downvote-count">0</span>
-            </button>
-              <button class="btn-action">Comment</button>
-            </div>
-          </article>
-
-          <!-- Post 4 -->
-          <article class="post" data-id="m4" data-type="image" data-full="images/full/m4.jpg">
-            <div class="post-media">
-              <img src="images/memes/m4.jpg" alt="Post 4" loading="lazy"/>
-            </div>
-            <div class="post-actions">
-              <button class="btn-vote upvote" title="Upvote">
-              ▲ <span class="upvote-count">0</span>
-            </button>
-            <button class="btn-vote downvote" title="Downvote">
-              ▼ <span class="downvote-count">0</span>
-            </button>
-              <button class="btn-action">Comment</button>
-            </div>
-          </article>
-
-          <!-- Post 5 -->
-          <article class="post" data-id="m5" data-type="image" data-full="images/full/m5.jpg">
-            <div class="post-media">
-              <img src="images/memes/m5.jpg" alt="Post 5" loading="lazy"/>
-            </div>
-            <div class="post-actions">
-              <button class="btn-vote upvote" title="Upvote">
-              ▲ <span class="upvote-count">0</span>
-            </button>
-            <button class="btn-vote downvote" title="Downvote">
-                ▼ <span class="downvote-count">0</span>
-            </button>
-              <button class="btn-action">Comment</button>
-            </div>
-          </article>
-
-          <!-- Post 6 -->
-          <article class="post" data-id="m6" data-type="image" data-full="images/full/m6.jpg">
-            <div class="post-media">
-              <img src="images/memes/m6.jpg" alt="Post 6" loading="lazy"/>
-            </div>
-            <div class="post-actions">
-              <button class="btn-vote upvote" title="Upvote">
-              ▲ <span class="upvote-count">0</span>
-            </button>
-            <button class="btn-vote downvote" title="Downvote">
-                ▼ <span class="downvote-count">0</span>
-            </button>
-              <button class="btn-action">Comment</button>
-            </div>
-          </article>
-
-          <!-- Video post -->
-          <article class="post" data-id="v1" data-type="video" data-full="videos/v1.mp4">
-            <div class="post-media">
-              <img class="thumb" alt="Video Post v1 (thumb)" loading="lazy"/>
-              <span class="play-badge" aria-hidden="true">▶</span>
-            </div>
-            <div class="post-actions">
-              <button class="btn-vote upvote" title="Upvote">
-              ▲ <span class="upvote-count">0</span>
-            </button>
-            <button class="btn-vote downvote" title="Downvote">
-                ▼ <span class="downvote-count">0</span>
-            </button>
-              <button class="btn-action">Comment</button>
-            </div>
-          </article>
-
-          <!-- Upload tile -->
-          <article class="post upload" id="uploadTile" aria-label="Upload a new post">
-            <input type="file" id="uploader" accept="image/*,video/*" hidden />
-            <div class="upload-inner">
-              <div class="plus">+</div>
-              <div>Upload</div>
-            </div>
-          </article>
-
-        </div>
+        <!-- Upload tile -->
+        <article class="post upload" id="uploadTile" aria-label="Upload a new post">
+          <input type="file" id="uploader" accept="image/*,video/*" hidden />
+          <div class="upload-inner">
+            <div class="plus">+</div>
+            <div>Upload</div>
+          </div>
+        </article>
       </div>
-    </section>
-  </main>
+    </div>
+  </section>
+
+  <!-- Auth UI -->
+  <div id="loginPopup">
+    <h3>Avans Login</h3>
+    <input type="email" id="loginEmail" placeholder="Your Avans email" />
+    <input type="password" id="loginPassword" placeholder="Password" />
+    <button id="loginBtn">Login</button>
+    <button id="registerBtn">Register</button>
+    <button id="logoutBtn" hidden>Logout</button>
+  </div>
+
+<!-- Lightbox Modal -->
+<div id="lightbox" class="lightbox" hidden>
+  <div class="lightbox__dialog" role="dialog" aria-modal="true">
+    <!-- Close button -->
+    <button class="lightbox__close" aria-label="Close">&times;</button>
+
+    <div class="lightbox__content">
+      <!-- Media (image/video) -->
+      <div class="lightbox__media" id="lbMedia"></div>
+
+      <!-- Comments sidebar -->
+      <aside class="lightbox__side">
+        <h3 class="lightbox__title">Comments</h3>
+        <ul class="lightbox__comments" id="lbComments">
+          <!-- comments injected here -->
+        </ul>
+
+        <!-- Comment form -->
+        <form class="lightbox__form" id="lbForm">
+          <textarea id="lbText" rows="3" placeholder="Write a comment…" required></textarea>
+          <button type="submit" class="btn-action">Post comment</button>
+        </form>
+      </aside>
+    </div>
+  </div>
+</div>
+
 
   <!-- Footer -->
   <footer>
     <p>© <span id="year"></span></p>
   </footer>
 
-  <!-- Lightbox Modal -->
-  <div id="lightbox" class="lightbox" aria-hidden="true" hidden>
-    <div class="lightbox__dialog" role="dialog" aria-modal="true" aria-label="Post viewer">
-      <button class="lightbox__close" aria-label="Close">&times;</button>
-
-      <div class="lightbox__content">
-        <div class="lightbox__media" id="lbMedia"><!-- injected --></div>
-
-        <aside class="lightbox__side">
-          <h3 class="lightbox__title">Comments</h3>
-          <ul class="lightbox__comments" id="lbComments"><!-- injected --></ul>
-
-          <form class="lightbox__form" id="lbForm">
-            <input type="text" id="lbName" placeholder="Your name" required />
-            <textarea id="lbText" rows="3" placeholder="Write a comment…" required></textarea>
-            <button type="submit" class="btn-action">Post comment</button>
-          </form>
-        </aside>
-      </div>
-    </div>
-  </div>
-    <!-- Sign-In Required Popup -->
-  <div id="authPopup" class="auth-popup" hidden>
-    <div class="auth-popup__content">
-      <p>You need to sign in to perform this action.</p>
-      <button id="authPopupClose">Close</button>
-      <button id="authPopupSignIn">Sign In</button>
-    </div>
-  </div>
   <!-- Firebase setup -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
     import { getDatabase } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
+    import { getAuth } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyAsPg7svScxQijjpYNfqteLMLWH80gge4M",
@@ -207,14 +101,12 @@
       messagingSenderId: "361466226719",
       appId: "1:361466226719:web:904d5f6fc1779f8efc0d2a",
       measurementId: "G-K8MD6033ZS",
-
-      // ✅ use your actual database URL
       databaseURL: "https://labwebsite-2ab57-default-rtdb.europe-west1.firebasedatabase.app/"
     };
 
-    // Initialize Firebase
     const app = initializeApp(firebaseConfig);
-    window.db = getDatabase(app); // expose DB globally for main.js
+    window.db = getDatabase(app);
+    window.auth = getAuth(app);
   </script>
 
   <!-- Entry point -->
