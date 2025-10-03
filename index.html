@@ -27,10 +27,10 @@
   <section class="feed">
     <header class="feed-header">
       <h2>Posts</h2>
-      <div class="sort-buttons">
-        <button id="sortRecent" class="active">Most Recent</button>
-        <button id="sortUpvoted">Most Upvoted</button>
-      </div>
+      <nav class="feed-tabs" aria-label="Sort posts">
+        <button id="sortRecent" class="feed-tab active" type="button">Most Recent</button>
+        <button id="sortUpvoted" class="feed-tab" type="button">Most Upvoted</button>
+      </nav>
     </header>
 
     <div class="feed-scroll">
@@ -41,9 +41,15 @@
             <img src="images/memes/m1.jpg" alt="Post 1" loading="lazy"/>
           </div>
           <div class="post-actions">
-            <button class="btn-vote upvote">▲ <span class="upvote-count">0</span></button>
-            <button class="btn-vote downvote">▼ <span class="downvote-count">0</span></button>
-            <button class="btn-action">Comment</button>
+            <button class="btn-vote upvote" type="button" aria-label="Upvote">
+              <span class="icon" aria-hidden="true">&#9650;</span>
+              <span class="count upvote-count">0</span>
+            </button>
+            <button class="btn-vote downvote" type="button" aria-label="Downvote">
+              <span class="icon" aria-hidden="true">&#9660;</span>
+              <span class="count downvote-count">0</span>
+            </button>
+            <button class="btn-action" type="button">Comment</button>
           </div>
         </article>
 
@@ -51,8 +57,8 @@
         <article class="post upload" id="uploadTile" aria-label="Upload a new post">
           <input type="file" id="uploader" accept="image/*,video/*" hidden />
           <div class="upload-inner">
-            <div class="plus">+</div>
-            <div>Upload</div>
+            <div class="plus" aria-hidden="true">+</div>
+            <p class="upload-text">Add New Post</p>
           </div>
         </article>
       </div>

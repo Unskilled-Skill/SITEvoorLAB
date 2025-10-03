@@ -203,9 +203,11 @@ main {
 /* Header above the grid */
 .feed-header{
   display: flex;
-  justify-content: center;
+  justify-content: space-between;
   align-items: center;
+  gap: 12px;
   margin: 8px 0 10px;
+  flex-wrap: wrap;
 }
 .feed-header h2{
   text-align: center;
@@ -719,13 +721,15 @@ footer{
   background: #333;
   padding: .6rem;
 }
-.sort-buttons {
+.sort-buttons,
+.feed-tabs {
   display: flex;
   gap: 8px;
   margin-left: auto;
 }
 
-.sort-buttons button {
+.sort-buttons button,
+.feed-tab {
   padding: 6px 14px;
   border-radius: 20px;
   font-size: 0.9rem;
@@ -736,24 +740,28 @@ footer{
 }
 
 /* Active button: grey, no hover */
-.sort-buttons button.active {
+.sort-buttons button.active,
+.feed-tab.active {
   background: #333;
   color: #004dfd;
   cursor: default;        /* looks non-clickable */
 }
 
-.sort-buttons button.active:hover {
+.sort-buttons button.active:hover,
+.feed-tab.active:hover {
   background: #333;       /* stays grey */
   color: #004dfd;         /* stays blue text */
 }
 
 /* Inactive button: blue, hover changes */
-.sort-buttons button:not(.active) {
+.sort-buttons button:not(.active),
+.feed-tab:not(.active) {
   background: #004dfd;
   color: #fff;
 }
 
-.sort-buttons button:not(.active):hover {
+.sort-buttons button:not(.active):hover,
+.feed-tab:not(.active):hover {
   background: #0035b9;    /* darker blue */
   color: #fff;
 }
@@ -786,6 +794,7 @@ footer{
     /* Hover only on devices with a real mouse */
   @media (hover: hover) and (pointer: fine) {
     .sort-buttons button:hover,
+    .feed-tab:hover,
     .btn-vote:hover {
       background: #004dfd;
       color: #fff;
@@ -1143,3 +1152,9 @@ footer{
   margin-bottom: 0; /* Remove any existing margin */
 }
 }
+
+
+
+
+
+

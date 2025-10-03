@@ -42,10 +42,27 @@ function computeTopPostCandidate() {
   return best;
 }
 
+
+function updateTopPostHighlight() {
+  document.querySelectorAll('.post.is-top-post').forEach((card) => {
+    card.classList.remove('is-top-post');
+  });
+
+  const top = computeTopPostCandidate();
+  if (!top) return;
+
+  document.querySelectorAll('.post[data-id]').forEach((card) => {
+    if (card.dataset.id === top.id) {
+      card.classList.add('is-top-post');
+    }
+  });
+}
+
 function refreshStoredTopPost() {
   const top = computeTopPostCandidate();
   if (!top) {
     try { localStorage.removeItem('topPost'); } catch {}
+    updateTopPostHighlight();
     return;
   }
 
@@ -59,6 +76,7 @@ function refreshStoredTopPost() {
   if (top.meta.poster) payload.poster = top.meta.poster;
 
   try { localStorage.setItem('topPost', JSON.stringify(payload)); } catch {}
+  updateTopPostHighlight();
 }
 
 /* ---------------------------
@@ -263,6 +281,11 @@ function listenForPosts() {
         poster: post.poster || null
       };
 
+      const voteValues = post.votes ? Object.values(post.votes) : [];
+      const upCount = voteValues.filter((v) => v === 'upvote').length;
+      const downCount = voteValues.filter((v) => v === 'downvote').length;
+      window.voteCache[id] = { up: upCount, down: downCount };
+
       // Render media
       if (post.type === "youtube") {
         const videoId = extractYouTubeId(post.full);
@@ -291,10 +314,20 @@ function listenForPosts() {
       const actions = document.createElement("div");
       actions.className = "post-actions";
       actions.innerHTML = `
-        <button class="btn-vote upvote">▲ <span class="upvote-count">0</span></button>
-        <button class="btn-vote downvote">▼ <span class="downvote-count">0</span></button>
-        <button class="btn-action">Comment</button>
+        <button class="btn-vote upvote" type="button" aria-label="Upvote">
+          <span class="icon" aria-hidden="true">&#9650;</span>
+          <span class="count upvote-count">0</span>
+        </button>
+        <button class="btn-vote downvote" type="button" aria-label="Downvote">
+          <span class="icon" aria-hidden="true">&#9660;</span>
+          <span class="count downvote-count">0</span>
+        </button>
+        <button class="btn-action" type="button">Comment</button>
       `;
+      const upCountEl = actions.querySelector('.upvote-count');
+      const downCountEl = actions.querySelector('.downvote-count');
+      if (upCountEl) upCountEl.textContent = upCount;
+      if (downCountEl) downCountEl.textContent = downCount;
 
       // Admin delete
       if (window.currentUser && window.currentUser.email === "marcelvanbrakel@student.avans.nl") {
