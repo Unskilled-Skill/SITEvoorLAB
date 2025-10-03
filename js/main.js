@@ -5,9 +5,6 @@
 
 import { initLightbox } from './lightbox.js';
 
-const { handleVote } = initializeVotingSystem(); // return handleVote function
-initLightbox(handleVote);
-let isSignedIn = false;
 /* ---------------------------
    Helpers: "latest post"
 ---------------------------- */
@@ -15,15 +12,12 @@ function saveLatestPost(obj) {
   try { localStorage.setItem('latestPost', JSON.stringify(obj)); } catch {}
 }
 
-// On grid load: take the *first* non-upload card as "latest"
 function updateLatestFromDocument() {
   const first = document.querySelector('.post-grid .post:not(.upload)');
   if (!first) return;
   const type = first.getAttribute('data-type') || 'image';
   const full = first.getAttribute('data-full');
   if (!full) return;
-
-  // For videos, try to reuse a thumbnail as poster if present
   const poster = first.querySelector('img.thumb')?.src || null;
   saveLatestPost({ type, full, poster });
 }
@@ -52,7 +46,6 @@ async function generatePoster(src, atSec = 0.1) {
             video.currentTime = target;
           });
         }
-
         const w = video.videoWidth || 640;
         const h = video.videoHeight || 360;
         const canvas = document.createElement('canvas');
@@ -142,9 +135,7 @@ function setupUpload({ onAfterAdd }) {
       img.className = 'thumb';
       img.alt = 'Uploaded video thumbnail';
       card.appendChild(img);
-
       try { img.src = await generatePoster(url, 0.15); } catch {}
-
       const badge = document.createElement('span');
       badge.className = 'play-badge';
       badge.textContent = '▶';
@@ -158,27 +149,27 @@ function setupUpload({ onAfterAdd }) {
       card.appendChild(img);
     }
 
-    // Create voting buttons and comment button
+    // Post actions
     const actions = document.createElement('div');
     actions.className = 'post-actions';
-    
+
     const upvoteBtn = document.createElement('button');
     upvoteBtn.className = 'btn-vote upvote';
     upvoteBtn.title = 'Upvote';
     upvoteBtn.innerHTML = '▲ <span class="upvote-count">0</span>';
     actions.appendChild(upvoteBtn);
-    
+
     const downvoteBtn = document.createElement('button');
     downvoteBtn.className = 'btn-vote downvote';
     downvoteBtn.title = 'Downvote';
     downvoteBtn.innerHTML = '▼ <span class="downvote-count">0</span>';
     actions.appendChild(downvoteBtn);
-    
+
     const commentBtn = document.createElement('button');
     commentBtn.className = 'btn-action';
     commentBtn.textContent = 'Comment';
     actions.appendChild(commentBtn);
-    
+
     card.appendChild(actions);
 
     grid.insertBefore(card, uploadTile);
@@ -190,7 +181,7 @@ function setupUpload({ onAfterAdd }) {
 }
 
 /* --------------------------------------
-   Broken image helper (nice placeholder)
+   Broken image helper
 --------------------------------------- */
 function setupImageErrorPlaceholder() {
   document.querySelectorAll('.post img').forEach((img) => {
@@ -208,16 +199,14 @@ function setupImageErrorPlaceholder() {
    Per-User Voting System
 ---------------------------- */
 function initializeVotingSystem() {
-  // Generate a unique ID for anonymous user
   let userId = localStorage.getItem('userId');
   if (!userId) {
     userId = crypto.randomUUID();
     localStorage.setItem('userId', userId);
   }
 
-  // Load votes and counts from localStorage
-  let votes = new Map();       // Map<postId, { userId: "upvote"|"downvote" }>
-  let voteCounts = new Map();  // Map<postId, { up: number, down: number }>
+  let votes = new Map();
+  let voteCounts = new Map();
 
   const savedVotes = localStorage.getItem('postVotes');
   if (savedVotes) votes = new Map(JSON.parse(savedVotes));
@@ -225,58 +214,44 @@ function initializeVotingSystem() {
   const savedCounts = localStorage.getItem('postVoteCounts');
   if (savedCounts) voteCounts = new Map(JSON.parse(savedCounts));
 
-  // Save to localStorage
   function saveVotes() {
     localStorage.setItem('postVotes', JSON.stringify(Array.from(votes.entries())));
     localStorage.setItem('postVoteCounts', JSON.stringify(Array.from(voteCounts.entries())));
   }
 
-  // Update vote counts display
   function updateVoteCounts(post, postId) {
     const upvoteCountEl = post.querySelector('.upvote-count');
     const downvoteCountEl = post.querySelector('.downvote-count');
     if (!upvoteCountEl || !downvoteCountEl) return;
-
     const counts = voteCounts.get(postId) || { up: 0, down: 0 };
-
     upvoteCountEl.textContent = counts.up;
     downvoteCountEl.textContent = counts.down;
   }
 
-  // Update button UI for the current user
   function updateVoteUI(post, postId) {
     const upvoteBtn = post.querySelector('.btn-vote.upvote');
     const downvoteBtn = post.querySelector('.btn-vote.downvote');
-
+    if (!upvoteBtn || !downvoteBtn) return; // <-- safeguard
     const currentVote = votes.get(postId)?.[userId] || null;
-
     upvoteBtn.classList.toggle('active', currentVote === 'upvote');
     downvoteBtn.classList.toggle('active', currentVote === 'downvote');
   }
 
-  // Handle vote click
   function handleVote(button) {
     const post = button.closest('.post');
     const postId = post.dataset.id;
     const isUpvote = button.classList.contains('upvote');
-
-    // Get or initialize votes for this post
     let postVotes = votes.get(postId) || {};
     let currentVote = postVotes[userId] || null;
 
-    // Toggle logic
     if (currentVote === (isUpvote ? 'upvote' : 'downvote')) {
-      // Remove vote
       delete postVotes[userId];
     } else {
-      // Add or switch vote
       postVotes[userId] = isUpvote ? 'upvote' : 'downvote';
     }
 
-    // Save updated votes
     votes.set(postId, postVotes);
 
-    // Recalculate aggregate counts
     const up = Object.values(postVotes).filter(v => v === 'upvote').length;
     const down = Object.values(postVotes).filter(v => v === 'downvote').length;
     voteCounts.set(postId, { up, down });
@@ -286,16 +261,14 @@ function initializeVotingSystem() {
     updateVoteUI(post, postId);
   }
 
-  // Set up click listeners
   document.addEventListener('click', (e) => {
     const button = e.target.closest('.btn-vote');
     if (!button) return;
-
-    e.stopPropagation(); // prevent lightbox opening
+    e.stopPropagation();
     handleVote(button);
   });
 
-  // Initialize UI for all posts
+  // init counts/UI
   document.querySelectorAll('.post').forEach(post => {
     const postId = post.dataset.id;
     updateVoteCounts(post, postId);
@@ -309,43 +282,41 @@ function initializeVotingSystem() {
 document.addEventListener('DOMContentLoaded', () => {
   console.log('DOM loaded - initializing...');
 
-  // Year footer
   const yearEl = document.getElementById('year');
   if (yearEl) yearEl.textContent = new Date().getFullYear();
-  
+
   let userId = localStorage.getItem('userId');
   if (!userId) {
     userId = crypto.randomUUID();
     localStorage.setItem('userId', userId);
   }
-  // Initialize voting system
+
   initializeVotingSystem();
   console.log('Voting system initialized');
 
   // Lightbox
   const { bindOpenToPosts } = initLightbox();
   bindOpenToPosts();
+  console.log('Lightbox initialized');
 
-  // Generate posters for any static video posts
   hydrateVideoThumbnails();
   console.log('Video thumbnails hydrated');
 
-  // Save current first post as "latest" so home page can use it
   updateLatestFromDocument();
   console.log('Latest post updated');
 
-  // Upload tile
   setupUpload({
     onAfterAdd: (card) => {
       if (card.getAttribute('data-type') === 'video') {
         hydrateVideoThumbnails();
       }
-
-      // Mark uploaded as latest
       const type = card.getAttribute('data-type') || 'image';
       const full = card.getAttribute('data-full');
       const poster = card.querySelector('img.thumb')?.src || null;
       if (full) saveLatestPost({ type, full, poster });
+
+      // ensure new posts also get lightbox listeners
+      bindOpenToPosts();
     },
   });
   console.log('Upload system initialized');
