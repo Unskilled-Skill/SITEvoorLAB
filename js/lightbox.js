@@ -83,20 +83,27 @@ function openLightbox(article) {
   }
 
   function bindOpenToPosts() {
-    document.querySelectorAll('.post').forEach(card => {
-      if (card.classList.contains('upload')) return;
-      card.addEventListener('click', (e) => {
-        if (e.target.closest('.btn-action')) e.stopPropagation();
-        openLightbox(card);
-      });
-      card.querySelector('.btn-action')?.addEventListener('click', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        openLightbox(card);
-      });
-    });
-  }
+  document.querySelectorAll('.post').forEach(card => {
+    if (card.classList.contains('upload')) return;
 
+    card.addEventListener('click', (e) => {
+      // If the click happened inside post-actions (buttons), ignore it
+      if (e.target.closest('.post-actions')) {
+        return;
+      }
+
+      // Otherwise, open the lightbox
+      openLightbox(card);
+    });
+
+    // If you want the "Comment" button to ALSO open the lightbox (to show comments)
+    card.querySelector('.btn-action')?.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      openLightbox(card);
+    });
+  });
+}
   // Comment form
   lbForm?.addEventListener('submit', (e) => {
     e.preventDefault();

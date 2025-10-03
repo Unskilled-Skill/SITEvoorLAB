@@ -237,37 +237,42 @@ main {
 @media (max-width: 1100px){ .post-grid{ grid-template-columns: repeat(2, minmax(0, 1fr)); gap:16px; } }
 @media (max-width: 680px){ .post-grid{ grid-template-columns: 1fr; gap:14px; } }
 
-/* Post card */
-.post{
-  position: relative;
+/* ---------- Updated Post Layout ---------- */
+.post {
   background: #fff;
   border: var(--card-border);
   border-radius: var(--radius);
   box-shadow: var(--shadow);
   transition: transform .14s ease, box-shadow .14s ease;
-  aspect-ratio: 1 / 1;
   display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  height: auto; /* Remove fixed aspect ratio */
 }
-.post:hover{
-  transform: translateY(-3px);
-  box-shadow: var(--shadow-hover);
+
+/* Media container - takes up most of the space */
+.post-media {
+  position: relative;
+  aspect-ratio: 1 / 1; /* Keep media square */
+  overflow: hidden;
 }
-.post img{
+
+.post-media img {
   width: 100%;
   height: 100%;
   object-fit: cover;
   display: block;
-  border-radius: calc(var(--radius) - 2px);
 }
+
 .post .thumb {
   width: 100%;
   height: 100%;
   object-fit: cover;
   display: block;
-  border-radius: calc(var(--radius) - 2px);
 }
 
-.post .play-badge{
+/* Play badge positioning */
+.post-media .play-badge {
   position: absolute;
   right: 10px;
   bottom: 10px;
@@ -276,37 +281,160 @@ main {
   background: rgba(0,0,0,.55);
   color: #fff;
   border-radius: 999px;
-  width: 34px; height: 34px;
-  display: grid; place-items: center;
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
   pointer-events: none;
 }
 
-/* Hover: soft veil + actions */
-.post::after{
-  content: "";
-  position: absolute; inset: 0;
-  background: rgba(0,0,0,0);
-  transition: background .15s ease;
+/* Post actions - now a proper section below the media */
+.post-actions {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 12px;
+  background: #fff;
+  border-top: 1px solid rgba(0,0,0,.08);
+  min-height: 60px;
+  flex-shrink: 0; /* Prevent shrinking */
 }
-.post:hover::after{ background: rgba(0,0,0,.10); }
-.post:hover img{ filter: grayscale(20%); }
 
-.post-actions{
-  position: absolute; left: 0; right: 0; bottom: 10px;
-  display: flex; justify-content: center; gap: 10px;
-  opacity: 0; transform: translateY(6px);
-  transition: all .15s ease; pointer-events: none;
+/* Voting buttons */
+.btn-vote {
+  background: #fff;
+  color: #333;
+  border: 2px solid #004dfd;
+  border-radius: 999px;
+  padding: 8px 16px;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0,0,0,.1);
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 60px;
+  justify-content: center;
 }
-.post:hover .post-actions{ opacity: 1; transform: translateY(0); }
 
-.btn-action{
-  background: #004dfd; color: #fff; border: none;
-  border-radius: 999px; padding: 8px 14px; font-weight: 800;
-  cursor: pointer; box-shadow: 0 6px 16px rgba(0,0,0,.18);
-  pointer-events: all;
+.btn-vote:hover {
+  background: #004dfd;
+  color: #fff;
+  transform: scale(1.05);
 }
-.btn-action:hover{ filter: brightness(1.05); }
-.btn-action:focus-visible{ outline: 3px solid #a9c4ff; outline-offset: 2px; }
+
+.btn-vote.upvote:hover {
+  border-color: #00c853;
+  background: #00c853;
+}
+
+.btn-vote.downvote:hover {
+  border-color: #ff1744;
+  background: #ff1744;
+}
+
+/* Comment button */
+.post-actions .btn-action {
+  background: #004dfd;
+  color: #fff;
+  border: none;
+  border-radius: 999px;
+  padding: 10px 20px;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0,0,0,.1);
+  transition: all 0.2s ease;
+  min-width: 100px;
+}
+
+.post-actions .btn-action:hover {
+  background: #0035b9;
+  transform: scale(1.05);
+}
+
+/* Active state for voted buttons */
+.btn-vote.active {
+  background: #004dfd;
+  color: #fff;
+}
+
+.btn-vote.upvote.active {
+  background: #00c853;
+  border-color: #00c853;
+}
+
+.btn-vote.downvote.active {
+  background: #ff1744;
+  border-color: #ff1744;
+}
+
+/* Upload tile adjustments */
+.post.upload {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #0d46ff10;
+  border: 2px dashed #004dfd;
+  aspect-ratio: 1 / 1;
+}
+
+.post.upload .upload-inner {
+  display: grid;
+  gap: 8px;
+  justify-items: center;
+  color: #004dfd;
+  font-weight: 700;
+}
+
+/* Remove old hover effects that were causing overlap */
+.post::after {
+  display: none;
+}
+
+.post:hover img {
+  filter: none;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .post-actions {
+    padding: 12px 10px;
+    gap: 8px;
+    min-height: 55px;
+  }
+  
+  .btn-vote {
+    padding: 6px 12px;
+    font-size: 0.9rem;
+    min-width: 50px;
+  }
+  
+  .post-actions .btn-action {
+    padding: 8px 16px;
+    font-size: 0.9rem;
+    min-width: 80px;
+  }
+}
+
+@media (max-width: 480px) {
+  .post-actions {
+    flex-wrap: wrap;
+    gap: 6px;
+    padding: 10px 8px;
+  }
+  
+  .btn-vote {
+    flex: 1;
+    min-width: 45px;
+  }
+  
+  .post-actions .btn-action {
+    flex: 100%;
+    margin-top: 4px;
+  }
+}
 
 /* Upload tile */
 .post.upload{
@@ -834,49 +962,55 @@ footer{
   transform: translateY(0); 
 }
 
-/* Voting buttons */
 .btn-vote {
-  background: #fff; 
-  color: #333; 
+  background: hsl(246, 94%, 51%);
+  color: #333;
   border: 2px solid #004dfd;
-  border-radius: 999px; 
-  padding: 6px 12px; 
+  border-radius: 999px;
+  padding: 6px 12px;
   font-weight: 800;
-  cursor: pointer; 
+  cursor: pointer;
   box-shadow: 0 2px 8px rgba(0,0,0,.1);
-  pointer-events: all;
   display: flex;
   align-items: center;
   gap: 4px;
   transition: all 0.2s ease;
 }
 
-.btn-vote:hover{ 
-  background: #004dfd;
-  color: #fff;
-  transform: scale(1.05);
+/* Hover only on desktop 
+@media (hover: hover) and (pointer: fine) {
+  .btn-vote.upvote:hover {
+    border-color: #00c853;
+    background: #00c853;
+    color: #fff;
+  }
+
+  .btn-vote.downvote:hover {
+    border-color: #ff1744;
+    background: #ff1744;
+    color: #fff;
+  }
 }
 
-.btn-vote.upvote:hover {
-  border-color: #00c853;
-  background: #00c853;
+/* Active states override everything */
+.btn-vote.green {
+  border-color: #00c853 !important;
+  background: #00c853 !important;
+  color: #fff !important;
 }
 
-.btn-vote.downvote:hover {
-  border-color: #ff1744;
-  background: #ff1744;
+.btn-vote.red {
+  border-color: #ff1744 !important;
+  background: #ff1744 !important;
+  color: #fff !important;
 }
 
-/* Comment button style update */
-.btn-action.comment-btn {
-  flex: 1;
-  max-width: 120px;
-}
+
 
 /* Adjust post container to accommodate actions below */
 .post-container {
   position: relative;
-  margin-bottom: 60px; /* Space for actions below */
+  margin-bottom: 50px; /* Space for actions below */
 }
 
 .post {
