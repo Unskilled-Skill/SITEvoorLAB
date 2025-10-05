@@ -2,54 +2,51 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Avans Fails Feed</title>
-  <link rel="stylesheet" href="style.css"/>
+
+  <link rel="stylesheet" href="style.css" />
 </head>
+
 <body class="home">
-  <!-- Header -->
+
+  <!-- ============================================================
+       HEADER
+  ============================================================ -->
   <header>
-    <!-- Top blue lines -->
     <div class="header-lines">
       <span></span><span></span><span></span><span></span><span></span>
     </div>
-    <a class="logo" href="home.html">
-      <img src="images/logo.png" alt="Site Logo"/>
+
+    <a class="logo" href="#">
+      <img src="images/logo.png" alt="Site Logo" />
     </a>
 
-    <!-- Right-side vertical lines -->
     <div class="header-lines-right">
       <span></span><span></span><span></span><span></span><span></span>
     </div>
   </header>
 
-  <!-- Main Feed -->
+  <!-- ============================================================
+       MAIN FEED
+  ============================================================ -->
   <section class="feed">
     <header class="feed-header">
       <h2>Posts</h2>
-      <nav class="feed-tabs" aria-label="Sort posts">
-        <button id="sortRecent" class="feed-tab active" type="button">Most Recent</button>
-        <button id="sortUpvoted" class="feed-tab" type="button">Most Upvoted</button>
+
+      <nav class="sort-buttons" aria-label="Sort posts">
+        <button id="sortRecent" class="active" type="button">Most Recent</button>
+        <button id="sortUpvoted" type="button">Most Upvoted</button>
       </nav>
     </header>
 
     <div class="feed-scroll">
-      <div class="post-grid">
-        <!-- Example post -->
-        <article class="post" data-id="m1" data-type="image" data-full="images/full/m1.jpg">
+      <div class="post-grid" id="postGrid">
+
+        <!-- Loading placeholder -->
+        <article class="post placeholder" id="loadingPlaceholder">
           <div class="post-media">
-            <img src="images/memes/m1.jpg" alt="Post 1" loading="lazy"/>
-          </div>
-          <div class="post-actions">
-            <button class="btn-vote upvote" type="button" aria-label="Upvote">
-              <span class="icon" aria-hidden="true">&#9650;</span>
-              <span class="count upvote-count">0</span>
-            </button>
-            <button class="btn-vote downvote" type="button" aria-label="Downvote">
-              <span class="icon" aria-hidden="true">&#9660;</span>
-              <span class="count downvote-count">0</span>
-            </button>
-            <button class="btn-action" type="button">Comment</button>
+            <div class="loading-spinner"></div>
           </div>
         </article>
 
@@ -65,7 +62,9 @@
     </div>
   </section>
 
-  <!-- Auth UI (always bottom-left, shrinks to logout when logged in) -->
+  <!-- ============================================================
+       LOGIN / AUTH POPUP
+  ============================================================ -->
   <div id="loginPopup">
     <h3>Avans Login</h3>
     <div class="login-form">
@@ -77,24 +76,20 @@
     <button id="logoutBtn" hidden>Logout</button>
   </div>
 
-  <!-- Lightbox Modal -->
+  <!-- ============================================================
+       LIGHTBOX (COMMENTS MODAL)
+  ============================================================ -->
   <div id="lightbox" class="lightbox" hidden>
     <div class="lightbox__dialog" role="dialog" aria-modal="true">
-      <!-- Close button -->
       <button class="lightbox__close" aria-label="Close">&times;</button>
 
       <div class="lightbox__content">
-        <!-- Media (image/video) -->
         <div class="lightbox__media" id="lbMedia"></div>
 
-        <!-- Comments sidebar -->
         <aside class="lightbox__side">
           <h3 class="lightbox__title">Comments</h3>
-          <ul class="lightbox__comments" id="lbComments">
-            <!-- comments injected here -->
-          </ul>
+          <ul class="lightbox__comments" id="lbComments"></ul>
 
-          <!-- Comment form -->
           <form class="lightbox__form" id="lbForm">
             <textarea id="lbText" rows="3" placeholder="Write a comment…" required></textarea>
             <button type="submit" class="btn-action">Post comment</button>
@@ -104,12 +99,16 @@
     </div>
   </div>
 
-  <!-- Footer -->
+  <!-- ============================================================
+       FOOTER
+  ============================================================ -->
   <footer>
     <p>© <span id="year"></span> Avans Fails Feed</p>
   </footer>
 
-  <!-- Firebase setup -->
+  <!-- ============================================================
+       FIREBASE SETUP
+  ============================================================ -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
     import { getDatabase } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
@@ -135,7 +134,7 @@
       document.getElementById("year").textContent = new Date().getFullYear();
     });
 
-    // Toggle login box state
+    // Auth-based UI
     onAuthStateChanged(window.auth, (user) => {
       const loginPopup = document.getElementById("loginPopup");
       const logoutBtn = document.getElementById("logoutBtn");
@@ -156,7 +155,9 @@
     });
   </script>
 
-  <!-- Entry point -->
+  <!-- ============================================================
+       MAIN SCRIPT ENTRY
+  ============================================================ -->
   <script type="module" src="js/main.js"></script>
 </body>
 </html>
