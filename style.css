@@ -364,20 +364,22 @@ main {
   justify-content: center;
 }
 
-.btn-vote:hover {
-  background: #004dfd;
-  color: #fff;
-  transform: scale(1.05);
-}
+@media (hover: hover) and (pointer: fine) {
+  .btn-vote:hover {
+    background: #004dfd;
+    color: #fff;
+    transform: scale(1.05);
+  }
 
-.btn-vote.upvote:hover {
-  border-color: #00c853;
-  background: #00c853;
-}
+  .btn-vote.upvote:hover {
+    border-color: #00c853;
+    background: #00c853;
+  }
 
-.btn-vote.downvote:hover {
-  border-color: #ff1744;
-  background: #ff1744;
+  .btn-vote.downvote:hover {
+    border-color: #ff1744;
+    background: #ff1744;
+  }
 }
 #loginPopup {
   position: fixed;
@@ -1274,15 +1276,42 @@ footer{
 
 
 /* --- VOTE COLORS --- */
-.btn-vote.active-up {
-  color: #2ecc71;       /* bright green */
-  font-weight: bold;
+.btn-vote.active-up,
+.btn-vote.active-up:hover {
+  background: #00c853;
+  border-color: #00c853;
+  color: #fff;
+  font-weight: 700;
 }
 
-.btn-vote.active-down {
-  color: #e74c3c;       /* bright red */
-  font-weight: bold;
+
+
+.btn-vote.active-down,
+.btn-vote.active-down:hover {
+  background: #ff1744;
+  border-color: #ff1744;
+  color: #fff;
+  font-weight: 700;
 }
+
+
+
+
+
+
+
+
+@media (hover: none) {
+  .btn-vote:not(.active-up):not(.active-down):hover,
+  .btn-vote.upvote:not(.active-up):hover,
+  .btn-vote.downvote:not(.active-down):hover {
+    background: #fff;
+    color: #333;
+    transform: none;
+    border-color: rgba(0,0,0,.12);
+  }
+}
+
 
 
 
