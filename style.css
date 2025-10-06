@@ -405,7 +405,7 @@ main {
 }
 #loginPopup {
   position: fixed;
-  bottom: 50px;
+  bottom: 10px;
   left: 12px;
   background: rgba(34, 34, 34, 0.95);
   padding: 10px;
@@ -863,8 +863,6 @@ footer{
   color: #fff;
 }
 
-
-
 /* (Optional) keep header lines above the logo on home page */
 .header-lines { z-index: 3; }
 .logo         { z-index: 2; position: absolute; top: 8px; right: var(--header-pad-x); }
@@ -1246,8 +1244,6 @@ footer{
   color: #fff !important;
 }
 
-
-
 /* Adjust post container to accommodate actions below */
 .post-container {
   position: relative;
@@ -1359,8 +1355,6 @@ footer{
   font-weight: 700;
 }
 
-
-
 .btn-vote.active-down,
 .btn-vote.active-down:hover {
   background: #ff1744;
@@ -1368,12 +1362,6 @@ footer{
   color: #fff;
   font-weight: 700;
 }
-
-
-
-
-
-
 
 
 @media (hover: none) {
@@ -1387,23 +1375,11 @@ footer{
   }
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
 /* ---------- Floating Add Button ---------- */
 .fab-add-post {
   position: fixed;
   bottom: 40px;
-  right: 160px;
+  right: 150px;
   width: 56px;
   height: 56px;
   border: none;
