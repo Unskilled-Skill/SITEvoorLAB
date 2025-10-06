@@ -245,9 +245,18 @@ document.addEventListener("DOMContentLoaded", () => {
   const yearEl = document.getElementById("year");
   if (yearEl) yearEl.textContent = new Date().getFullYear();
 
+  const fab = document.getElementById("fabAddPost");
+  if (fab) {
+    fab.addEventListener("click", () => {
+      window.location.href = "./index.html#uploadTile";
+    });
+  }
+
   if (state.noteEl) state.noteEl.textContent = "Loading posts...";
   if (state.wrap) renderFallback("Loading posts...");
 
   bindControls();
   subscribeToPosts();
 });
+
+

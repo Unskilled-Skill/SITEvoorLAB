@@ -1399,3 +1399,44 @@ footer{
 
 
 
+/* ---------- Floating Add Button ---------- */
+.fab-add-post {
+  position: fixed;
+  bottom: 70px;
+  right: 160px;
+  width: 56px;
+  height: 56px;
+  border: none;
+  border-radius: 999px;
+  background: #004dfd;
+  color: #fff;
+  font-size: 2rem;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow);
+  cursor: pointer;
+  z-index: 40;
+  transition: transform .2s ease, box-shadow .2s ease;
+}
+
+.fab-add-post:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-hover);
+}
+
+.fab-add-post:focus-visible {
+  outline: 3px solid rgba(0, 77, 253, 0.4);
+  outline-offset: 2px;
+}
+
+@media (max-width: 600px) {
+  .fab-add-post {
+    bottom: 60px;
+    right: 16px;
+    width: 52px;
+    height: 52px;
+    font-size: 1.8rem;
+  }
+}

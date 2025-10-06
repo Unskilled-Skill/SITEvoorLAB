@@ -292,6 +292,17 @@ document.addEventListener("DOMContentLoaded", () => {
   setupUpload();
   listenForPosts();
 
+  const fab = document.getElementById("fabAddPost");
+  if (fab) {
+    fab.addEventListener("click", () => {
+      const uploadTile = document.getElementById("uploadTile");
+      if (uploadTile) {
+        uploadTile.scrollIntoView({ behavior: "smooth", block: "center" });
+        uploadTile.click();
+      }
+    });
+  }
+
   const { bindOpenToPosts } = initLightbox();
   bindOpenToPosts();
 
@@ -308,3 +319,4 @@ document.addEventListener("DOMContentLoaded", () => {
 
   console.log("All systems ready!");
 });
+
